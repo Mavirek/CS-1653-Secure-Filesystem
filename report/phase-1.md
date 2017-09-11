@@ -4,15 +4,15 @@ https://www.dropbox.com/business/trust/security/information-security
 https://en.wikipedia.org/wiki/Digital_signature#How_they_work
 http://www.fsl.cs.sunysb.edu/docs/integrity-storagess05/integrity.html
 
-Properties:
-Limited Access
-Each user in their group has appropriate access to their corresponding files based on permissions set by the admin. Each group’s admin can pass permissions to read only or read/write, can add/delete people from group and can add/delete files. 
-Least Privilege says that each user can operate with a minimal access prevent malicious corruption. Follows the Fail-safe defaults principle. Follows the Least common mechanism. 
-Assumes the admin has no intent to corrupt. Assumes each user gets correct privilege. 
-Isolation
-No one has access to files outside of their group scope. 
-Helps maintain integrity and confidentiality. 
-Assumes groups are assigned correctly. 
+Properties:\n
+1. Limited Access
+* Each user in their group has appropriate access to their corresponding files based on permissions set by the admin. Each group’s admin can pass permissions to read only or read/write, can add/delete people from group and can add/delete files. 
+* Least Privilege says that each user can operate with a minimal access prevent malicious corruption. Follows the Fail-safe defaults principle. Follows the Least common mechanism. 
+* Assumes the admin has no intent to corrupt. Assumes each user gets correct privilege. 
+2. Isolation
+* No one has access to files outside of their group scope. 
+* Helps maintain integrity and confidentiality. 
+* Assumes groups are assigned correctly. 
 Reliability 
 Backup servers that maintain up-to-date copies of the files. 
 Insures data integrity despite failures. 
