@@ -2,7 +2,7 @@
    Justin Keenan, jak244, jak244  
    Sai Konduru, sck42, sck42
 
-
+  
 **Section 1 : Security Properties**
 
 1. Limited Access
@@ -66,7 +66,7 @@
 	* Ensures easier encryption and data integrity through checksumming. 
 	* Assumes the encryption algorithm chooses most appropriate and efficient chunk size. 
 	
-	
+  	
 **Section 2 : Threat Models**
 
 1. Employee Network
@@ -131,7 +131,7 @@
 * File server storage scheme
 	* Server splits any file, that an employee wishes to store, into blocks for easy storage, encryption, and checksumming. 
 
-
+  
 **Section 3 : References**
 
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa365233(v=vs.85).aspx
