@@ -1,6 +1,6 @@
-    Allen Poon     alp170   mavrick  
-    Justin Keenan  jak244   jak244  
-    Sai Konduru    sck42    sck42
+   Allen Poon     alp170   mavrick  
+   Justin Keenan  jak244   jak244  
+   Sai Konduru    sck42    sck42
 
 **Section 1 : Security Properties**
 
