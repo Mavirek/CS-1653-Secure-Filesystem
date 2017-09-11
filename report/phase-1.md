@@ -1,8 +1,8 @@
-Allen Poon     alp170   mavrick  
-Justin Keenan  jak244   jak244  
-Sai Konduru    sck42    sck42
+  Allen Poon     alp170   mavrick  
+  Justin Keenan  jak244   jak244  
+  Sai Konduru    sck42    sck42
 
-Section 1 : Security Properties
+**Section 1 : Security Properties**
 
 1. Limited Access
 	* Each user in their group has appropriate access to their corresponding files based on permissions set by the admin. Each 		group’s admin can pass permissions to read only or read/write, can add/delete people from group and can add/delete files. 
@@ -65,7 +65,7 @@ Section 1 : Security Properties
 	* Ensures easier encryption and data integrity through checksumming. 
 	* Assumes the encryption algorithm chooses most appropriate and efficient chunk size. 
 	
-Section 2 : Threat Models
+**Section 2 : Threat Models**
 
 1. Employee Network
 
@@ -129,7 +129,7 @@ Section 2 : Threat Models
 * File server storage scheme
 	* Server splits any file, that an employee wishes to store, into blocks for easy storage, encryption, and checksumming. 
 
-Section 3 : References
+**Section 3 : References**
 
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa365233(v=vs.85).aspx
 https://www.dropbox.com/business/trust/security/information-security
