@@ -1,5 +1,5 @@
-Allen Poon     alp170   mavrick
-Justin Keenan  jak244   jak244
+Allen Poon     alp170   mavrick  
+Justin Keenan  jak244   jak244  
 Sai Konduru    sck42    sck42
 
 Section 1 : Security Properties
@@ -133,5 +133,5 @@ Section 3 : References
 
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa365233(v=vs.85).aspx
 https://www.dropbox.com/business/trust/security/information-security
-https://en.wikipedia.org/wiki/Digital_signature#How_they_work
+https://en.wikipedia.org/wiki/Digital_signature#How_they_work  
 http://www.fsl.cs.sunysb.edu/docs/integrity-storagess05/integrity.html
