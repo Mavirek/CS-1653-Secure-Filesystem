@@ -4,24 +4,24 @@ https://www.dropbox.com/business/trust/security/information-security
 https://en.wikipedia.org/wiki/Digital_signature#How_they_work
 http://www.fsl.cs.sunysb.edu/docs/integrity-storagess05/integrity.html
 
-Properties:\n
+Properties:
 1. Limited Access
-* Each user in their group has appropriate access to their corresponding files based on permissions set by the admin. Each group’s admin can pass permissions to read only or read/write, can add/delete people from group and can add/delete files. 
-* Least Privilege says that each user can operate with a minimal access prevent malicious corruption. Follows the Fail-safe defaults principle. Follows the Least common mechanism. 
-* Assumes the admin has no intent to corrupt. Assumes each user gets correct privilege. 
+	* Each user in their group has appropriate access to their corresponding files based on permissions set by the admin. Each 		group’s admin can pass permissions to read only or read/write, can add/delete people from group and can add/delete files. 
+	* Least Privilege says that each user can operate with a minimal access prevent malicious corruption. Follows the Fail-safe 		defaults principle. Follows the Least common mechanism. 
+	* Assumes the admin has no intent to corrupt. Assumes each user gets correct privilege. 
 2. Isolation
-* No one has access to files outside of their group scope. 
-* Helps maintain integrity and confidentiality. 
-* Assumes groups are assigned correctly. 
-Reliability 
-Backup servers that maintain up-to-date copies of the files. 
-Insures data integrity despite failures. 
-Assumes servers back up regularly and accurately. 
-Simple Design
-Simple and easy interface for all users. 
-Prevents any human error caused by complicated interfaces. Follows the Economy of Mechanism principle. 
-Assumes users understand simple design. 
-Two Factor Authorization
+	* No one has access to files outside of their group scope. 
+	* Helps maintain integrity and confidentiality. 
+	* Assumes groups are assigned correctly. 
+3. Reliability 
+	* Backup servers that maintain up-to-date copies of the files. 
+	* Insures data integrity despite failures. 
+	* Assumes servers back up regularly and accurately. 
+4. Simple Design
+	* Simple and easy interface for all users. 
+	* Prevents any human error caused by complicated interfaces. Follows the Economy of Mechanism principle. 
+	* Assumes users understand simple design. 
+1. Two Factor Authorization
 Each user has to pass two forms of authorization in-order to gain access to account. 
 Prevents data breach by confiscation of single password. 
 Assumes only the user has access to both forms of authorization. Assumes an account is needed to login to access files.
