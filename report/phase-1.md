@@ -151,8 +151,8 @@
   
 **Section 3 : References**
 
-https://msdn.microsoft.com/en-us/library/windows/desktop/aa365233(v=vs.85).aspx
-https://technet.microsoft.com/en-us/library/cc959354.aspx
-https://www.digitalocean.com/community/tutorials/7-security-measures-to-protect-your-servers
-https://www.computerworld.com/article/2563639/mobile-wireless/wireless-hacking-techniques.html
+https://msdn.microsoft.com/en-us/library/windows/desktop/aa365233(v=vs.85).aspx  
+https://technet.microsoft.com/en-us/library/cc959354.aspx  
+https://www.digitalocean.com/community/tutorials/7-security-measures-to-protect-your-servers  
+https://www.computerworld.com/article/2563639/mobile-wireless/wireless-hacking-techniques.html  
 http://www.pearsonitcertification.com/articles/article.aspx?p=1713591
