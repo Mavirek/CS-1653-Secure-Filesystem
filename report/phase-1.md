@@ -15,7 +15,7 @@
 	* Assumes groups are assigned correctly. 
 1. Reliability 
 	* File servers are automatically backed up daily. 
-	* Insures data integrity despite failures because corrupted files can be compared to the backup files to ensure data matches. 		Protects against attacks that cause data breaches resulting in data being lost or modified. 
+	* Insures data integrity despite failures because corrupted files can be compared to the backup files to ensure data matches. 		Protects against attacks that cause data breaches resulting in data being lost or modified. Present and past files can be 		compared for changes.
 	* Assumes servers back up regularly and accurately. 
 1. Two Factor Authorization
 	* Each user has to pass two forms of authorization in-order to gain access to account. The second form of authorization is a 		randomly generated passcode sent to a previously approved mobile device. 
@@ -118,31 +118,35 @@
 * Isolation
 	* Keeps each member’s accessibility contained to their group. 
 * Reliability 
-	* Servers are regularly maintained and backed up by the employees of the company.
-* Simple Design
-	* Employees are trained to use the software, and the software is kept simple to make for easy use of the system. 
+	* Servers are regularly maintained and backed up automatically.
 * Two Factor Authorization
 	* Each employee has two forms of authorization to access the system. 
-* Public 
-	* The system’s architecture and software are made public. 
-* Log in Encryption/Decryption
-	* The system will encrypt and decrypt files at rest. 
-* Server Firewall
-	* Protects server from viruses that could be introduced by rival companies and attackers. 
+* Transit Attacks
+	* Wireless access to the servers make the servers prone to attacks in traffic/transit
+* Encrypted Server Data
+	* Ensures any wireless attacks towards the servers don’t result in data confidentiality because of servers only contain 		ciphertext. 
+* Malicious Files
+	* None of the employees or outside attackers can physically or virtually attack the server through malicious files or viruses. 
 * Session Control
 	* Employees will only have access to server for an allotted time or until they log out.
 * Concurrency Control
 	* Server ensures that only one employee can write a file at once to avoid concurrent modification.
-* Certificate Pinning
-	* Forces the employees to connect via the application. Verifies each employee’s identification. 
 * Local Encryptor
 	* When employees wish to download a file, the application will split encrypt and separate the file throughout the local system. 
-* IP detection
-	* Detects unregistered devices and notifies employees. Assumes employees will respond appropriately.  
-* Upload Limit
-	* Any file greater than a preset size uploaded by the user is split into chunks and encrypted by the system before being sent to 	the server. 
-* File server storage scheme
-	* Server splits any file, that an employee wishes to store, into blocks for easy storage, encryption, and checksumming. 
+* Device Management
+	* All employee devices are registered and approved by the company.
+* Traffic Control
+	* Limits traffic from employee to server to prevent overloading/DDOS attacks.
+* Private Connections
+	* Employee-server connections are made private and hidden.
+* Strong Passwords
+	* Each employee is given an appropriate password by the company. 
+* Unauthorized Modifications 
+	* Every file has a file history.
+* Sniffing Attacks
+	* Servers are physically and wirelessly secured.
+* Authorized Communications
+	* Communication between employee and the company is verified for authenticity.
 
   
 **Section 3 : References**
