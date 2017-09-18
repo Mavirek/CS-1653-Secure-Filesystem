@@ -12,8 +12,21 @@ public abstract class Client {
 	protected ObjectInputStream input;
 
 	public boolean connect(final String server, final int port) {
+		
 		System.out.println("attempting to connect");
-
+		//SAI MADE THESE CHANGES. 
+		try{
+			Envelope message = new Envelope("CONNECT"); 
+			output.writeObject(message); 
+			sock = new Socket(server, port, true); 
+			return true; 
+		}
+		catch(Exception e)
+		{
+			System.err.println("Error: " + e.getMessage()); 
+			e.printStackTrace(System.err); 
+		}
+		return false; 
 		/* TODO: Write this method */
 
 	}
