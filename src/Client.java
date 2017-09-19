@@ -10,6 +10,14 @@ public abstract class Client {
 	protected Socket sock;
 	protected ObjectOutputStream output;
 	protected ObjectInputStream input;
+	
+	public static void main(String[] args)
+	{
+		Scanner s = new Scanner(System.in);
+		System.out.print("Welcome, please enter a server name: ");
+		String serverName = s.next();
+		Token userToken = new Token()
+	}
 
 	public boolean connect(final String server, final int port) {
 		
@@ -17,8 +25,11 @@ public abstract class Client {
 		//SAI MADE THESE CHANGES. 
 		try{
 			Envelope message = new Envelope("CONNECT"); 
-			output.writeObject(message); 
 			sock = new Socket(server, port, true); 
+			output = new ObjectOutputStream(sock.getOutputStream());
+			input = new ObjectInputStream(sock.getInputStream()); 
+			message.addObject(server); //Add server name
+			output.writeObject(message); 
 			return true; 
 		}
 		catch(Exception e)
