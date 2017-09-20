@@ -37,6 +37,26 @@ public class FileThread extends Thread
 				if(e.getMessage().equals("LFILES"))
 				{
 				    /* TODO: Write this handler */
+					if(e.getObjContents().size() != 1)
+						response = new Envelope("FAIL-BADCONTENTS"); 
+					else if(e.getObjContents().get(0) == null)
+						response = new Envelope("FAIL-BADTOKEN"); 
+					else{
+						UserToken ut = (Token)e.getObjContents(0); 
+						ArrayList<ShareFile> list = FileServer.fileList.getFiles();
+						ArrayList<String> groups = ut.getGroup(); 
+						ArrayList<FileList> result = new FileList(); 
+						for(int i = 0; i < groups.size(); i++)
+						{
+							for(int j = 0; j < list.size(); j++)
+							{
+								if(list.get(j).getGroup().equals(groups.get(i)))
+									result.addFile(list.get(j).getOwner(), list.get(j).getGroup(), list.get(i).getPath()); 
+							}
+						}
+						response = new Envelope("OK"); 
+						response.writeObject(result); 
+					}
 				}
 				if(e.getMessage().equals("UPLOADF"))
 				{
