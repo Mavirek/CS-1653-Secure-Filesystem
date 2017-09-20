@@ -3,6 +3,7 @@
 import java.lang.Thread;
 import java.net.Socket;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -38,24 +39,24 @@ public class FileThread extends Thread
 				{
 				    /* TODO: Write this handler */
 					if(e.getObjContents().size() != 1)
-						response = new Envelope("FAIL-BADCONTENTS"); 
+						response = new Envelope("FAIL-BADCONTENTS");
 					else if(e.getObjContents().get(0) == null)
-						response = new Envelope("FAIL-BADTOKEN"); 
+						response = new Envelope("FAIL-BADTOKEN");
 					else{
-						UserToken ut = (Token)e.getObjContents(0); 
+						UserToken ut = (Token)e.getObjContents().get(0);
 						ArrayList<ShareFile> list = FileServer.fileList.getFiles();
-						ArrayList<String> groups = ut.getGroup(); 
-						ArrayList<FileList> result = new FileList(); 
+						ArrayList<String> groups = (ArrayList<String>)ut.getGroups();
+						FileList result = new FileList();
 						for(int i = 0; i < groups.size(); i++)
 						{
 							for(int j = 0; j < list.size(); j++)
 							{
 								if(list.get(j).getGroup().equals(groups.get(i)))
-									result.addFile(list.get(j).getOwner(), list.get(j).getGroup(), list.get(i).getPath()); 
+									result.addFile(list.get(j).getOwner(), list.get(j).getGroup(), list.get(i).getPath());
 							}
 						}
-						response = new Envelope("OK"); 
-						response.writeObject(result); 
+						response = new Envelope("OK");
+						output.writeObject(result); //response.writeObject(result);  !!!!
 					}
 				}
 				if(e.getMessage().equals("UPLOADF"))

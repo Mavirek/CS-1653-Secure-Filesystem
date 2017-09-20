@@ -11,14 +11,14 @@ public class FileClientApp
 		}
 
 		FileClient fc = new FileClient();
-		GroupFile gc = new GroupClient();
+		GroupClient gc = new GroupClient();
 		if(fc.connect(args[1],Integer.parseInt(args[3])) && gc.connect(args[2],Integer.parseInt(args[4])))
 		{
 			Scanner s = new Scanner(System.in);
 			System.out.println("Connected to Group Server: "+args[1]+" Port: "+args[3]+" File Server: "+args[2]+" Port: "+args[4]);
 			System.out.print("Please enter the group name: ");
 			String groupName = s.next();
-			
+
 		}
 		else
 		{
