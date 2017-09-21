@@ -12,6 +12,11 @@ public class Token implements UserToken {
 	private String subject; 
 	private ArrayList<String> groups = new ArrayList<String>(); 
 	private boolean isAdmin; 
+	public Token()
+	{
+		issuer = "Group"; 
+		subject = "ADMIN OF ADMIN"; 
+	}
 	public Token(ArrayList<String> g)
 	{
 		groups = g; 
@@ -30,6 +35,12 @@ public class Token implements UserToken {
 	}
 	public List<String> getGroups(){
 		return groups; 
+	}
+	public void addGroup(String groupName){
+		groups.add(groupName); 
+	}
+	public void removeGroup(String groupName){
+		groups.remove(groupName); 
 	}
 	public void setAdmin(boolean admin){
 		isAdmin = admin; 

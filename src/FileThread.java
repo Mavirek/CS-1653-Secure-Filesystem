@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.*; 
 
 public class FileThread extends Thread
 {
@@ -42,10 +43,11 @@ public class FileThread extends Thread
 					else if(e.getObjContents().get(0) == null)
 						response = new Envelope("FAIL-BADTOKEN"); 
 					else{
-						UserToken ut = (Token)e.getObjContents(0); 
+						//Change Token getGroups to the Hashtable 
+						UserToken ut = (Token)e.getObjContents().get(0); 
 						ArrayList<ShareFile> list = FileServer.fileList.getFiles();
-						ArrayList<String> groups = ut.getGroup(); 
-						ArrayList<FileList> result = new FileList(); 
+						ArrayList<String> groups = (ArrayList<String>)ut.getGroups(); 
+						FileList result = new FileList(); 
 						for(int i = 0; i < groups.size(); i++)
 						{
 							for(int j = 0; j < list.size(); j++)
@@ -55,7 +57,8 @@ public class FileThread extends Thread
 							}
 						}
 						response = new Envelope("OK"); 
-						response.writeObject(result); 
+						response.addObject(result); 
+						output.writeObject(response); 
 					}
 				}
 				if(e.getMessage().equals("UPLOADF"))

@@ -15,11 +15,13 @@ import java.io.*;
 import java.util.*;
 
 
+
 public class GroupServer extends Server {
 
 	public static final int SERVER_PORT = 8765;
 	public UserList userList;
-    
+	public Hashtable<String, Group> gList = new Hashtable<String, Group>(); 
+
 	public GroupServer() {
 		super(SERVER_PORT, "ALPHA");
 	}
@@ -59,6 +61,7 @@ public class GroupServer extends Server {
 			userList.addUser(username);
 			userList.addGroup(username, "ADMIN");
 			userList.addOwnership(username, "ADMIN");
+			gList.put("ADMIN", new Group("ADMIN")); 
 		}
 		catch(IOException e)
 		{

@@ -111,10 +111,56 @@ public class GroupThread extends Thread
 				else if(message.getMessage().equals("CGROUP")) //Client wants to create a group
 				{
 				    /* TODO:  Write this handler */
+					if(message.getObjContents().size() < 2)
+					{
+						response = new Envelope("FAIL");
+					}
+					else
+					{
+						response = new Envelope("FAIL");
+						
+						if(message.getObjContents().get(0) != null)
+						{
+							if(message.getObjContents().get(1) != null)
+							{
+								String group = (String)message.getObjContents().get(0); //Extract the groupname
+								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+								
+								if(cGroup(group, (Token)yourToken))
+								{
+									response = new Envelope("OK"); //Success
+								}
+							}
+						}
+					}
+					output.writeObject(response);
 				}
 				else if(message.getMessage().equals("DGROUP")) //Client wants to delete a group
 				{
 				    /* TODO:  Write this handler */
+					if(message.getObjContents().size() < 2)
+					{
+						response = new Envelope("FAIL");
+					}
+					else
+					{
+						response = new Envelope("FAIL");
+						
+						if(message.getObjContents().get(0) != null)
+						{
+							if(message.getObjContents().get(1) != null)
+							{
+								String group = (String)message.getObjContents().get(0); //Extract the groupname
+								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+								
+								if(deleteGroup(group, (Token)yourToken))
+								{
+									response = new Envelope("OK"); //Success
+								}
+							}
+						}
+					}
+					output.writeObject(response);
 				}
 				else if(message.getMessage().equals("LMEMBERS")) //Client wants a list of members in a group
 				{
@@ -163,7 +209,7 @@ public class GroupThread extends Thread
 		}
 	}
 	
-	
+	//TAKE CARE OF GLIST
 	//Method to create a user
 	private boolean createUser(String username, UserToken yourToken)
 	{
@@ -198,7 +244,7 @@ public class GroupThread extends Thread
 			return false; //requester does not exist
 		}
 	}
-	
+	//TAKE CARE OF GLIST
 	//Method to delete a user
 	private boolean deleteUser(String username, UserToken yourToken)
 	{
@@ -260,5 +306,31 @@ public class GroupThread extends Thread
 			return false; //requester does not exist
 		}
 	}
-	
+	private boolean cGroup(String groupName, Token user)
+	{
+		if(!my_gs.gList.containsKey(groupName))
+		{
+			my_gs.gList.put(groupName,new Group(groupName, user)); 
+			user.addGroup(groupName); 
+			my_gs.userList.addGroup(user.getSubject(), groupName); 
+			my_gs.userList.addOwnership(user.getSubject(), groupName); 
+			return true;
+		}
+		return false; 
+	}
+	private boolean deleteGroup(String groupName, Token user)
+	{
+		if(my_gs.gList.containsKey(groupName) && my_gs.userList.getUserOwnership(user.getSubject()).contains(groupName))
+		{
+			Group g = my_gs.gList.remove(groupName);
+			for(Token t : g.getUsers())
+			{
+				t.removeGroup(groupName); 
+				my_gs.userList.removeGroup(t.getSubject(), groupName); 
+			}
+			my_gs.userList.removeOwnership(user.getSubject(), groupName); 
+			return true;
+		}
+		return false; 
+	}
 }
