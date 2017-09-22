@@ -34,6 +34,7 @@ public class GroupServer extends Server {
 		// Overwrote server.start() because if no user file exists, initial admin account needs to be created
 		
 		String userFile = "UserList.bin";
+		String groupFile = "GroupList.bin"; 
 		Scanner console = new Scanner(System.in);
 		ObjectInputStream userStream;
 		ObjectInputStream groupStream;
@@ -61,7 +62,7 @@ public class GroupServer extends Server {
 			userList.addUser(username);
 			userList.addGroup(username, "ADMIN");
 			userList.addOwnership(username, "ADMIN");
-			gList.put("ADMIN", new Group("ADMIN")); 
+			//gList.put("ADMIN", new Group("ADMIN")); 
 		}
 		catch(IOException e)
 		{
@@ -73,7 +74,32 @@ public class GroupServer extends Server {
 			System.out.println("Error reading from UserList file");
 			System.exit(-1);
 		}
-		
+		try
+		{
+			FileInputStream gfis = new FileInputStream(userFile);
+			groupStream = new ObjectInputStream(gfis);
+			gList = (Hashtable<String, Group>)groupStream.readObject();
+		}
+		catch(FileNotFoundException e)
+		{
+			System.out.println("GroupList File Does Not Exist. Creating GroupList...");
+			System.out.println("No Groups currently exist. ");
+			System.out.print("Enter your username: ");
+			String username = console.next();
+			
+			//Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
+			gList.put("ADMIN", new Group("ADMIN", username)); 
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error reading from UserList file");
+			System.exit(-1);
+		}
+		catch(ClassNotFoundException e)
+		{
+			System.out.println("Error reading from UserList file");
+			System.exit(-1);
+		}
 		//Autosave Daemon. Saves lists every 5 minutes
 		AutoSave aSave = new AutoSave(this);
 		aSave.setDaemon(true);

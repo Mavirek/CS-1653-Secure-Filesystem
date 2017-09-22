@@ -3,24 +3,20 @@ import java.io.*;
 
 public class Group{
 	private String name; 
-	private Token owner;
-	private ArrayList<Token> users = new ArrayList<Token>(); 
-	//USE THIS FOR ADMIN GROUP
-	public Group(String gName)
-	{
-		name = gName;
-	}
-	public Group(String gName, Token gOwner)
+	private String owner;
+	private ArrayList<String> users = new ArrayList<String>(); 
+
+	public Group(String gName, String gOwner)
 	{
 		name = gName; 
 		owner = gOwner; 
 		users.add(owner); 
 	}
-	public void addUser(Token user)
+	public void addUser(String user)
 	{
 		users.add(user); 
 	}
-	public boolean removeUser(Token user)
+	public boolean removeUser(String user)
 	{
 		if(users.contains(user))
 		{
@@ -29,7 +25,7 @@ public class Group{
 		}
 		return false; 
 	}
-	public Token getOwner()
+	public String getOwner()
 	{
 		return owner; 
 	}
@@ -37,15 +33,15 @@ public class Group{
 	{
 		return name; 
 	}
-	public ArrayList<Token> getUsers()
+	public ArrayList<String> getUsers()
 	{
 		return users; 
 	}
 	public void printUserNames()
 	{
-		for(Token t : users)
+		for(String t : users)
 		{
-			System.out.println(t.getSubject()); 
+			System.out.println(t); 
 		}
 	}
 }
