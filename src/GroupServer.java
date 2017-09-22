@@ -38,6 +38,7 @@ public class GroupServer extends Server {
 		Scanner console = new Scanner(System.in);
 		ObjectInputStream userStream;
 		ObjectInputStream groupStream;
+		String username="";
 		
 		//This runs a thread that saves the lists on program exit
 		Runtime runtime = Runtime.getRuntime();
@@ -55,7 +56,7 @@ public class GroupServer extends Server {
 			System.out.println("UserList File Does Not Exist. Creating UserList...");
 			System.out.println("No users currently exist. Your account will be the administrator.");
 			System.out.print("Enter your username: ");
-			String username = console.next();
+			username = console.next();
 			
 			//Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
 			userList = new UserList();
@@ -76,7 +77,7 @@ public class GroupServer extends Server {
 		}
 		try
 		{
-			FileInputStream gfis = new FileInputStream(userFile);
+			FileInputStream gfis = new FileInputStream(groupFile);
 			groupStream = new ObjectInputStream(gfis);
 			gList = (Hashtable<String, Group>)groupStream.readObject();
 		}
@@ -84,8 +85,8 @@ public class GroupServer extends Server {
 		{
 			System.out.println("GroupList File Does Not Exist. Creating GroupList...");
 			System.out.println("No Groups currently exist. ");
-			System.out.print("Enter your username: ");
-			String username = console.next();
+			//System.out.print("Enter your username: ");
+			//String username = console.next();
 			
 			//Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
 			gList.put("ADMIN", new Group("ADMIN", username)); 
