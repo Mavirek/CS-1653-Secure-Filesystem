@@ -31,6 +31,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				if(temp.size() == 1)
 				{
 					token = (UserToken)temp.get(0);
+					System.out.println("Token Created"); 
 					return token;
 				}
 			}

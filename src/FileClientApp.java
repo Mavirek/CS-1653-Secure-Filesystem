@@ -41,7 +41,7 @@ public class FileClientApp
 							System.out.println("8: Delete a User From a Group"); 
 							System.out.println("9: Disconnect"); 
 							x = sc.nextInt(); 
-							
+							sc.nextLine(); 
 							switch(x)
 							{
 								case 1: 
@@ -125,7 +125,7 @@ public class FileClientApp
 									System.out.println("Invalid entry!"); 
 									x = 1; 
 							}
-						}while(x > 0 && x < 10);
+						}while(x > 0 && x < 9);
 						
 					}
 					else

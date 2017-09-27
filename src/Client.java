@@ -16,12 +16,9 @@ public abstract class Client {
 		System.out.println("attempting to connect");
 		//SAI MADE THESE CHANGES. 
 		try{
-			//Envelope message = new Envelope("CONNECT"); 
-			sock = new Socket(server, port, true); 
+			sock = new Socket(server, port); 
 			output = new ObjectOutputStream(sock.getOutputStream());
 			input = new ObjectInputStream(sock.getInputStream()); 
-			//message.addObject(server); //Add server name
-			//output.writeObject(message); 
 			return true; 
 		}
 		catch(Exception e)
