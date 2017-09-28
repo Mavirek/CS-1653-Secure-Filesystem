@@ -20,7 +20,7 @@ public class GroupServer extends Server {
 
 	public static final int SERVER_PORT = 8765;
 	public UserList userList;
-	public static Hashtable<String, Group> gList = new Hashtable<String, Group>(); 
+	public Hashtable<String, Group> gList = new Hashtable<String, Group>(); 
 
 	public GroupServer() {
 		super(SERVER_PORT, "ALPHA");

@@ -196,6 +196,7 @@ public class FileClientApp
 							System.out.println("4: Upload"); 
 							System.out.println("5: Disconnect"); 
 							y = s.nextInt(); 
+							s.nextLine();
 							switch(y)
 							{
 								case 1: 
@@ -252,7 +253,7 @@ public class FileClientApp
 									System.out.println("Invalid entry!"); 
 									y = 1; 
 							}
-						}while(y > 0 && y < 6);
+						}while(y > 0 && y < 5);
 						
 					}
 					else

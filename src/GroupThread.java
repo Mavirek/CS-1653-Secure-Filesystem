@@ -420,6 +420,7 @@ public class GroupThread extends Thread
 	{
 		if(my_gs.gList.containsKey(groupName) && my_gs.userList.getUserOwnership(user.getSubject()).contains(groupName))
 		{
+			user.removeGroup(groupName);
 			Group g = my_gs.gList.remove(groupName);
 			for(String userName : g.getUsers())
 			{

@@ -46,14 +46,19 @@ public class FileThread extends Thread
 						//Change Token getGroups to the Hashtable 
 						UserToken ut = (Token)e.getObjContents().get(0); 
 						ArrayList<ShareFile> list = FileServer.fileList.getFiles();
+						
 						ArrayList<String> groups = (ArrayList<String>)ut.getGroups(); 
+						System.out.println("list size: " + list.size() + " groups size: " + groups.size()); 
 						FileList result = new FileList(); 
 						for(int i = 0; i < groups.size(); i++)
 						{
 							for(int j = 0; j < list.size(); j++)
 							{
 								if(list.get(j).getGroup().equals(groups.get(i)))
-									result.addFile(list.get(j).getOwner(), list.get(j).getGroup(), list.get(i).getPath()); 
+								{
+									System.out.println("owner: "+list.get(j).getOwner()+" group: "+list.get(j).getGroup()+" path: "+list.get(i).getPath());
+									result.addFile(list.get(j).getOwner(), list.get(j).getGroup(), list.get(i).getPath());
+								}									
 							}
 						}
 						response = new Envelope("OK"); 
