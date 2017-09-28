@@ -179,7 +179,7 @@ public class GroupThread extends Thread
 							{
 								String group = (String)message.getObjContents().get(0); //Extract the groupname
 								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
-								if(my_gs.gList.contains(group))  //Group exists
+								if(my_gs.gList.containsKey(group))  //Group exists
 								{
 									Group g = my_gs.gList.get(group);
 									if(g.getOwner().equals(yourToken.getSubject())) //User is owner
@@ -199,10 +199,12 @@ public class GroupThread extends Thread
 					if(message.getObjContents().size() < 3)
 					{
 						response = new Envelope("FAIL");
+						//System.out.println("msg.size < 3");
 					}
 					else
 					{
 						response = new Envelope("FAIL");
+						//System.out.println("msg.size else");
 						
 						if(message.getObjContents().get(0) != null)
 						{
@@ -212,8 +214,9 @@ public class GroupThread extends Thread
 								String userToBeAdded = (String)message.getObjContents().get(0); 
 								String group = (String) message.getObjContents().get(1); //Extract the groupname
 								UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
-								if(my_gs.gList.contains(group))  //Group exists
+								if(my_gs.gList.containsKey(group))  //Group exists
 								{
+									System.out.println("group exists");
 									Group g = my_gs.gList.get(group);
 									if(g.getOwner().equals(yourToken.getSubject())) //User calling is owner
 									{
@@ -249,7 +252,7 @@ public class GroupThread extends Thread
 								String userToBeRemoved = (String)message.getObjContents().get(0); 
 								String group = (String) message.getObjContents().get(1); //Extract the groupname
 								UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
-								if(my_gs.gList.contains(group))  //Group exists
+								if(my_gs.gList.containsKey(group))  //Group exists
 								{
 									Group g = my_gs.gList.get(group);
 									if(g.getOwner().equals(yourToken.getSubject())) //User calling is owner
