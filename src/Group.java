@@ -21,6 +21,8 @@ public class Group{
 		if(users.contains(user))
 		{
 			users.remove(user);
+			System.out.println("removeUser()");
+			printUserNames();
 			return true;
 		}
 		return false; 

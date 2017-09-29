@@ -51,6 +51,7 @@ public class GroupThread extends Thread
 						response = new Envelope("OK");
 						response.addObject(yourToken);
 						output.writeObject(response);
+						updateUserList();
 					}
 				}
 				else if(message.getMessage().equals("CUSER")) //Client wants to create a user
@@ -73,6 +74,7 @@ public class GroupThread extends Thread
 								if(createUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									updateUserList();
 								}
 							}
 						}
@@ -101,6 +103,7 @@ public class GroupThread extends Thread
 								if(deleteUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									updateUserList();
 								}
 							}
 						}
@@ -129,6 +132,7 @@ public class GroupThread extends Thread
 								if(cGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									updateUserList();
 								}
 							}
 						}
@@ -156,6 +160,7 @@ public class GroupThread extends Thread
 								if(deleteGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									updateUserList();
 								}
 							}
 						}
@@ -186,6 +191,7 @@ public class GroupThread extends Thread
 									{
 										response = new Envelope("OK"); //Success
 										response.addObject(g.getUsers());
+										updateUserList();
 									}
 								}
 							}
@@ -226,6 +232,7 @@ public class GroupThread extends Thread
 											my_gs.gList.get(group).addUser(userToBeAdded); 
 											my_gs.userList.addGroup(userToBeAdded, group); 
 											response = new Envelope("OK"); //Success
+											updateUserList();
 										}
 									}
 								}
@@ -265,6 +272,7 @@ public class GroupThread extends Thread
 												my_gs.gList.get(group).removeUser(userToBeRemoved); 
 												my_gs.userList.removeGroup(userToBeRemoved, group); 
 												response = new Envelope("OK"); //Success
+												updateUserList();
 											}
 										}
 									}
@@ -276,18 +284,7 @@ public class GroupThread extends Thread
 				}
 				else if(message.getMessage().equals("DISCONNECT")) //Client wants to disconnect
 				{
-					System.out.println("Saving User list..."); 
-					ObjectOutputStream outStream;
-					try
-					{
-						outStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
-						outStream.writeObject(my_gs.userList);
-					}
-					catch(Exception e)
-					{
-						System.err.println("Error: " + e.getMessage());
-						e.printStackTrace(System.err);
-					}
+					updateUserList();
 					socket.close(); //Close the socket
 					proceed = false; //End this communication loop
 				}
@@ -297,6 +294,22 @@ public class GroupThread extends Thread
 					output.writeObject(response);
 				}
 			}while(proceed);	
+		}
+		catch(Exception e)
+		{
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+		}
+	}
+	
+	private void updateUserList()
+	{
+		System.out.println("Saving User list..."); 
+		ObjectOutputStream outStream;
+		try
+		{
+			outStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
+			outStream.writeObject(my_gs.userList);
 		}
 		catch(Exception e)
 		{
@@ -378,7 +391,8 @@ public class GroupThread extends Thread
 					for(int index = 0; index < my_gs.userList.getUserGroups(username).size(); index++)
 					{
 						deleteFromGroups.add(my_gs.userList.getUserGroups(username).get(index));
-						my_gs.gList.get(my_gs.userList.getUserGroups(username).get(index)).getUsers().remove(username);
+						if(my_gs.gList.get(my_gs.userList.getUserGroups(username).get(index)).removeUser(username))
+							System.out.println("user successfully deleted from grouplist");
 					}
 					
 					//If groups are owned, they must be deleted

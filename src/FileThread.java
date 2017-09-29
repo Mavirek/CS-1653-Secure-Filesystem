@@ -223,6 +223,7 @@ public class FileThread extends Thread
 				else if (e.getMessage().compareTo("DELETEF")==0) {
 
 					String remotePath = (String)e.getObjContents().get(0);
+					System.out.println("remotePath = "+remotePath);
 					Token t = (Token)e.getObjContents().get(1);
 					ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
 					if (sf == null) {

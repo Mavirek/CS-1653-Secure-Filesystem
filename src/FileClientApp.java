@@ -122,8 +122,12 @@ public class FileClientApp
 										System.out.println("Group Name:"); 
 										List<String> list = gc.listMembers(sc.nextLine(), userToken);
 										System.out.println("Meme-bers: ");
-										for(String s : list)
-											System.out.println(s); 
+										if(list!=null)
+										{
+											for(String s : list)
+												if(!s.equals(null))
+													System.out.println(s); 
+										}
 									}
 									else 
 										System.out.println("Please Select Option 1 to Get Token First"); 
