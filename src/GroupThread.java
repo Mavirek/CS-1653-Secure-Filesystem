@@ -276,6 +276,18 @@ public class GroupThread extends Thread
 				}
 				else if(message.getMessage().equals("DISCONNECT")) //Client wants to disconnect
 				{
+					System.out.println("Saving User list..."); 
+					ObjectOutputStream outStream;
+					try
+					{
+						outStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
+						outStream.writeObject(my_gs.userList);
+					}
+					catch(Exception e)
+					{
+						System.err.println("Error: " + e.getMessage());
+						e.printStackTrace(System.err);
+					}
 					socket.close(); //Close the socket
 					proceed = false; //End this communication loop
 				}

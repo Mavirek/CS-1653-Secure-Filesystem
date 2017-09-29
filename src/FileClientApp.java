@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.*;
 
 public class FileClientApp
@@ -167,6 +168,7 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First"); 
 									break;
 								case 9:
+									userToken = (Token) gc.getToken(args[0]);
 									gc.disconnect(); 
 									System.out.println("Disconnected From Group Server"); 
 									break; 
@@ -193,8 +195,36 @@ public class FileClientApp
 					}
 					if(fc.connect(args[2],Integer.parseInt(args[4])))
 					{
+						String userFile = "UserList.bin";
+						UserList userList = null; 
+						ObjectInputStream userStream;
+						try
+						{
+							FileInputStream fis = new FileInputStream(userFile);
+							userStream = new ObjectInputStream(fis);
+							userList = (UserList)userStream.readObject();
+							
+						}
+						catch(FileNotFoundException e)
+						{
+							System.err.println(e); 
+							System.exit(1); 
+						}
+						catch(IOException e)
+						{
+							System.out.println("Error reading from UserList file");
+							System.exit(-1);
+						}
+						catch(ClassNotFoundException e)
+						{
+							System.out.println("Error Class Not found ");
+							System.exit(-1);
+						}
 						System.out.println("FILESERVER TOKEN PRINT:"); 
-						userToken.print();
+						Token t = new Token("FilePile", args[0], userList.getUserGroups(args[0])); 
+						//userToken = (Token) gc.getToken(args[0]);
+						t.print();
+						
 						Scanner s = new Scanner(System.in);
 						System.out.println("Connected to File Server: "+args[2]+" Port: "+args[4]);
 						int y = 0; 
@@ -211,7 +241,7 @@ public class FileClientApp
 							{
 								case 1: 
 									System.out.println("Please enter a file name: "); 
-									if(fc.delete(s.nextLine(), userToken))
+									if(fc.delete(s.nextLine(), t))
 									{
 										System.out.println("File successfully deleted");
 									}
@@ -225,7 +255,7 @@ public class FileClientApp
 									String sf = s.nextLine(); 
 									System.out.println("Please enter the Destination File: "); 
 									String df = s.nextLine(); 
-									if(fc.download(sf, df, userToken))
+									if(fc.download(sf, df, t))
 									{
 										System.out.println("File successfully downloaded");
 									}
@@ -235,7 +265,7 @@ public class FileClientApp
 									}
 									break;
 								case 3:
-									List<String> flist = fc.listFiles(userToken);
+									List<String> flist = fc.listFiles(t);
 									for(String c : flist)
 										System.out.println(c); 
 									
@@ -246,7 +276,7 @@ public class FileClientApp
 									System.out.println("Please enter the Destination File: "); 
 									String dtf = s.nextLine(); 
 									System.out.println("Please enter the Group Name: ");
-									if(fc.upload(scf, dtf, s.nextLine(), userToken))
+									if(fc.upload(scf, dtf, s.nextLine(), t))
 									{
 										System.out.println("File successfully uploaded");
 									}
