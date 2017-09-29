@@ -2,6 +2,7 @@ import java.util.*;
 
 public class FileClientApp
 {
+	protected static Token userToken = null; 
 	public static void main(String[] args)
 	{
 		if(args.length != 5)
@@ -12,7 +13,6 @@ public class FileClientApp
 
 		FileClient fc = new FileClient();
 		GroupClient gc = new GroupClient();
-		Token userToken = null; 
 		Scanner sc = new Scanner(System.in);
 		int z = 0; 
 		do{
@@ -28,7 +28,7 @@ public class FileClientApp
 					{
 						System.out.println("Connected to Group Server: "+args[1]+" Port: "+args[3]);
 						int x = 0; 
-						userToken = (Token) gc.getToken(args[0]);
+						//userToken = (Token) gc.getToken(args[0]);
 						do{
 							System.out.println("Please Select an Option");
 							System.out.println("1: Get a Token"); 
@@ -54,6 +54,7 @@ public class FileClientApp
 										if(gc.createUser(sc.nextLine(), userToken))
 										{
 											System.out.println("User successfully created");
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -70,6 +71,7 @@ public class FileClientApp
 										if(gc.deleteUser(sc.nextLine(), userToken))
 										{
 											System.out.println("User successfully deleted");
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -86,6 +88,7 @@ public class FileClientApp
 										if(gc.createGroup(sc.nextLine(), userToken))
 										{
 											System.out.println("Group successfully created");
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -102,6 +105,7 @@ public class FileClientApp
 										if(gc.deleteGroup(sc.nextLine(), userToken))
 										{
 											System.out.println("Group successfully deleted");
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -133,6 +137,7 @@ public class FileClientApp
 										if(gc.addUserToGroup(sc.nextLine(), group, userToken))
 										{
 											System.out.println("User successfully added");
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -151,6 +156,7 @@ public class FileClientApp
 										if(gc.deleteUserFromGroup(sc.nextLine(), group, userToken))
 										{
 											System.out.println("User successfully deleted from group");
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -168,6 +174,8 @@ public class FileClientApp
 									System.out.println("Invalid entry!"); 
 									x = 1; 
 							}
+							userToken.print(); 
+
 						}while(x > 0 && x < 9);
 						
 					}
@@ -185,6 +193,8 @@ public class FileClientApp
 					}
 					if(fc.connect(args[2],Integer.parseInt(args[4])))
 					{
+						System.out.println("FILESERVER TOKEN PRINT:"); 
+						userToken.print();
 						Scanner s = new Scanner(System.in);
 						System.out.println("Connected to File Server: "+args[2]+" Port: "+args[4]);
 						int y = 0; 

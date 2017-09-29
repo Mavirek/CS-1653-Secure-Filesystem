@@ -37,7 +37,9 @@ public class Token implements UserToken, java.io.Serializable{
 		return groups; 
 	}
 	public void addGroup(String groupName){
-		groups.add(groupName); 
+		System.out.println("Group being added for user: " + subject); 
+		if(groups.add(groupName)) 
+			System.out.println("Group " + groupName + " added for user: " + subject);
 	}
 	public void removeGroup(String groupName){
 		groups.remove(groupName); 
@@ -47,5 +49,15 @@ public class Token implements UserToken, java.io.Serializable{
 	}
 	public boolean isAdministrator(){
 		return isAdmin; 
+	}
+	public void print()
+	{
+		System.out.println("Issuer: " + issuer); 
+		System.out.println("Subject: " + subject); 
+		System.out.println(groups.size()); 
+		for(int i = 0; i < groups.size(); i++)
+		{
+			System.out.println("Group " + i + ": " + groups.get(i)); 
+		}
 	}
 }

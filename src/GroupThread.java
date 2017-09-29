@@ -68,7 +68,7 @@ public class GroupThread extends Thread
 							if(message.getObjContents().get(1) != null)
 							{
 								String username = (String)message.getObjContents().get(0); //Extract the username
-								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+								Token yourToken = (Token)message.getObjContents().get(1); //Extract the token
 								
 								if(createUser(username, yourToken))
 								{
@@ -213,7 +213,7 @@ public class GroupThread extends Thread
 								
 								String userToBeAdded = (String)message.getObjContents().get(0); 
 								String group = (String) message.getObjContents().get(1); //Extract the groupname
-								UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
+								Token yourToken = (Token)message.getObjContents().get(2); //Extract the token
 								if(my_gs.gList.containsKey(group))  //Group exists
 								{
 									System.out.println("group exists");
@@ -222,6 +222,7 @@ public class GroupThread extends Thread
 									{
 										if(!my_gs.gList.get(group).getUsers().contains(userToBeAdded))
 										{
+											System.out.println("ADDING USER TO GROUP!!!!!"); 
 											my_gs.gList.get(group).addUser(userToBeAdded); 
 											my_gs.userList.addGroup(userToBeAdded, group); 
 											response = new Envelope("OK"); //Success
@@ -300,6 +301,7 @@ public class GroupThread extends Thread
 		{
 			//Issue a new token with server's name, user's name, and user's groups
 			UserToken yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username));
+			System.out.println("INSIDE CREATETOKEN"); 
 			return yourToken;
 		}
 		else
@@ -408,6 +410,7 @@ public class GroupThread extends Thread
 	{
 		if(!my_gs.gList.containsKey(groupName))
 		{
+			System.out.println("INSIDE CGROUP"); 
 			my_gs.gList.put(groupName,new Group(groupName, user.getSubject())); 
 			user.addGroup(groupName); 
 			my_gs.userList.addGroup(user.getSubject(), groupName); 
