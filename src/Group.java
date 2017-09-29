@@ -1,47 +1,47 @@
 import java.util.*;
 import java.io.*;
 
-public class Group implements java.io.Serializable {
-	private String name;
+public class Group{
+	private String name; 
 	private String owner;
-	private ArrayList<String> users = new ArrayList<String>();
+	private ArrayList<String> users = new ArrayList<String>(); 
 
 	public Group(String gName, String gOwner)
 	{
-		name = gName;
-		owner = gOwner;
-		users.add(owner);
+		name = gName; 
+		owner = gOwner; 
+		users.add(owner); 
 	}
-	public synchronized void addUser(String user)
+	public void addUser(String user)
 	{
-		users.add(user);
+		users.add(user); 
 	}
-	public synchronized boolean removeUser(String user)
+	public boolean removeUser(String user)
 	{
 		if(users.contains(user))
 		{
 			users.remove(user);
 			return true;
 		}
-		return false;
+		return false; 
 	}
-	public synchronized String getOwner()
+	public String getOwner()
 	{
-		return owner;
+		return owner; 
 	}
-	public synchronized String getName()
+	public String getName()
 	{
-		return name;
+		return name; 
 	}
-	public synchronized ArrayList<String> getUsers()
+	public ArrayList<String> getUsers()
 	{
-		return users;
+		return users; 
 	}
-	public synchronized void printUserNames()
+	public void printUserNames()
 	{
 		for(String t : users)
 		{
-			System.out.println(t);
+			System.out.println(t); 
 		}
 	}
 }

@@ -49,15 +49,15 @@ public class FileThread extends Thread
 						
 						ArrayList<String> groups = (ArrayList<String>)ut.getGroups(); 
 						System.out.println("list size: " + list.size() + " groups size: " + groups.size()); 
-						FileList result = new FileList(); 
+						ArrayList<String> result = new ArrayList<String>(); 
 						for(int i = 0; i < groups.size(); i++)
 						{
 							for(int j = 0; j < list.size(); j++)
 							{
 								if(list.get(j).getGroup().equals(groups.get(i)))
 								{
-									System.out.println("owner: "+list.get(j).getOwner()+" group: "+list.get(j).getGroup()+" path: "+list.get(i).getPath());
-									result.addFile(list.get(j).getOwner(), list.get(j).getGroup(), list.get(i).getPath());
+									System.out.println("owner: "+list.get(j).getOwner()+" group: "+list.get(j).getGroup()+" path: "+list.get(j).getPath());
+									result.add(list.get(j).getPath()); 
 								}									
 							}
 						}
