@@ -180,7 +180,6 @@ public class FileClientApp
 									System.out.println("Invalid entry!"); 
 									x = 1; 
 							}
-							userToken.print(); 
 
 						}while(x > 0 && x < 9);
 						

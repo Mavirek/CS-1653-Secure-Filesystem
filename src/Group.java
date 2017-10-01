@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class Group{
+public class Group  implements java.io.Serializable{
 	private String name; 
 	private String owner;
 	private ArrayList<String> users = new ArrayList<String>(); 
@@ -12,11 +12,11 @@ public class Group{
 		owner = gOwner; 
 		users.add(owner); 
 	}
-	public void addUser(String user)
+	public synchronized void addUser(String user)
 	{
 		users.add(user); 
 	}
-	public boolean removeUser(String user)
+	public synchronized boolean removeUser(String user)
 	{
 		if(users.contains(user))
 		{
@@ -27,19 +27,19 @@ public class Group{
 		}
 		return false; 
 	}
-	public String getOwner()
+	public synchronized String getOwner()
 	{
 		return owner; 
 	}
-	public String getName()
+	public synchronized String getName()
 	{
 		return name; 
 	}
-	public ArrayList<String> getUsers()
+	public synchronized ArrayList<String> getUsers()
 	{
 		return users; 
 	}
-	public void printUserNames()
+	public synchronized void printUserNames()
 	{
 		for(String t : users)
 		{

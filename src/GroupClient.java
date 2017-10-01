@@ -3,7 +3,8 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.io.ObjectInputStream;
-
+import java.io.*;
+import java.util.*;
 public class GroupClient extends Client implements GroupClientInterface {
  
 	 public UserToken getToken(String username)
@@ -176,10 +177,12 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 output.writeObject(message); 
 			 
 			 response = (Envelope)input.readObject();
-			 
+			
 			 //If server indicates success, return the member list
 			 if(response.getMessage().equals("OK"))
 			 { 
+				ArrayList<String> list = (ArrayList<String>)response.getObjContents().get(0); 
+				System.out.println(Arrays.toString(list.toArray(new String[list.size()]))); 
 				return (List<String>)response.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
 			 }
 				

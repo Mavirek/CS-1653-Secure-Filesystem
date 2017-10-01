@@ -191,6 +191,7 @@ public class GroupThread extends Thread
 									{
 										response = new Envelope("OK"); //Success
 										response.addObject(g.getUsers());
+										System.out.println(Arrays.toString(g.getUsers().toArray(new String[g.getUsers().size()]))); 
 										updateUserList();
 									}
 								}
@@ -304,12 +305,14 @@ public class GroupThread extends Thread
 	
 	private void updateUserList()
 	{
-		System.out.println("Saving User list..."); 
+		System.out.println("Saving Group and User list..."); 
 		ObjectOutputStream outStream;
 		try
 		{
 			outStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
 			outStream.writeObject(my_gs.userList);
+			outStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
+			outStream.writeObject(my_gs.gList); 
 		}
 		catch(Exception e)
 		{
@@ -373,7 +376,8 @@ public class GroupThread extends Thread
 	private boolean deleteUser(String username, UserToken yourToken)
 	{
 		String requester = yourToken.getSubject();
-		
+		if(username.equals(requester)) return false; //Shouldn't be allowed to delete yourself
+			
 		//Does requester exist?
 		if(my_gs.userList.checkUser(requester))
 		{

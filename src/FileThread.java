@@ -210,6 +210,7 @@ public class FileThread extends Thread
 								System.out.printf("Upload failed: %s\n", e.getMessage());
 
 							}
+							fis.close(); 
 						}
 						}
 						catch(Exception e1)
