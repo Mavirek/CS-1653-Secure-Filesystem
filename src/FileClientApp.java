@@ -31,6 +31,7 @@ public class FileClientApp
 						int x = 0; 
 						//userToken = (Token) gc.getToken(args[0]);
 						do{
+							System.out.println();
 							System.out.println("Please Select an Option");
 							System.out.println("1: Get a Token"); 
 							System.out.println("2: Create a User"); 
@@ -47,6 +48,11 @@ public class FileClientApp
 							{
 								case 1: 
 									userToken = (Token) gc.getToken(args[0]);
+									if(userToken==null)
+									{
+										System.out.println("Error: Token could not be created. User does not exist\nDisconnecting..");
+										System.exit(1);
+									}
 									break;
 								case 2:
 									if(userToken != null)  
@@ -121,13 +127,21 @@ public class FileClientApp
 									{
 										System.out.println("Group Name:"); 
 										List<String> list = gc.listMembers(sc.nextLine(), userToken);
-										System.out.println("Meme-bers: ");
 										if(list!=null)
 										{
-											for(String s : list)
-												if(!s.equals(null))
-													System.out.println(s); 
+											System.out.println("Meme-bers: ");
+											if(list!=null)
+											{
+												for(String s : list)
+													if(!s.equals(null))
+														System.out.println(s); 
+											}
 										}
+										else
+										{
+											System.out.println("Group does not exist");
+										}
+										
 									}
 									else 
 										System.out.println("Please Select Option 1 to Get Token First"); 
@@ -223,10 +237,10 @@ public class FileClientApp
 							System.out.println("Error Class Not found ");
 							System.exit(-1);
 						}
-						System.out.println("FILESERVER TOKEN PRINT:"); 
+						//System.out.println("FILESERVER TOKEN PRINT:"); 
 						Token t = new Token("FilePile", args[0], userList.getUserGroups(args[0])); 
-						//userToken = (Token) gc.getToken(args[0]);
-						t.print();
+						userToken = (Token) gc.getToken(args[0]);
+						//t.print();
 						
 						Scanner s = new Scanner(System.in);
 						System.out.println("Connected to File Server: "+args[2]+" Port: "+args[4]);

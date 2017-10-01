@@ -181,8 +181,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 //If server indicates success, return the member list
 			 if(response.getMessage().equals("OK"))
 			 { 
-				ArrayList<String> list = (ArrayList<String>)response.getObjContents().get(0); 
-				System.out.println(Arrays.toString(list.toArray(new String[list.size()]))); 
+				//ArrayList<String> list = (ArrayList<String>)response.getObjContents().get(0); 
+				//System.out.println(Arrays.toString(list.toArray(new String[list.size()]))); 
 				return (List<String>)response.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
 			 }
 				

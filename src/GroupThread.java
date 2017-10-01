@@ -51,7 +51,7 @@ public class GroupThread extends Thread
 						response = new Envelope("OK");
 						response.addObject(yourToken);
 						output.writeObject(response);
-						updateUserList();
+						//updateUserList();
 					}
 				}
 				else if(message.getMessage().equals("CUSER")) //Client wants to create a user
@@ -74,7 +74,7 @@ public class GroupThread extends Thread
 								if(createUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									updateUserList();
+									//updateUserList();
 								}
 							}
 						}
@@ -103,7 +103,7 @@ public class GroupThread extends Thread
 								if(deleteUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									updateUserList();
+									//updateUserList();
 								}
 							}
 						}
@@ -132,7 +132,7 @@ public class GroupThread extends Thread
 								if(cGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									updateUserList();
+									//updateUserList();
 								}
 							}
 						}
@@ -160,7 +160,7 @@ public class GroupThread extends Thread
 								if(deleteGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									updateUserList();
+									//updateUserList();
 								}
 							}
 						}
@@ -192,7 +192,7 @@ public class GroupThread extends Thread
 										response = new Envelope("OK"); //Success
 										response.addObject(g.getUsers());
 										System.out.println(Arrays.toString(g.getUsers().toArray(new String[g.getUsers().size()]))); 
-										updateUserList();
+										//updateUserList();
 									}
 								}
 							}
@@ -233,7 +233,7 @@ public class GroupThread extends Thread
 											my_gs.gList.get(group).addUser(userToBeAdded); 
 											my_gs.userList.addGroup(userToBeAdded, group); 
 											response = new Envelope("OK"); //Success
-											updateUserList();
+											//updateUserList();
 										}
 									}
 								}
@@ -273,7 +273,7 @@ public class GroupThread extends Thread
 												my_gs.gList.get(group).removeUser(userToBeRemoved); 
 												my_gs.userList.removeGroup(userToBeRemoved, group); 
 												response = new Envelope("OK"); //Success
-												updateUserList();
+												//updateUserList();
 											}
 										}
 									}

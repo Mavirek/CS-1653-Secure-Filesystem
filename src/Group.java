@@ -21,8 +21,8 @@ public class Group  implements java.io.Serializable{
 		if(users.contains(user))
 		{
 			users.remove(user);
-			System.out.println("removeUser()");
-			printUserNames();
+			//System.out.println("removeUser()");
+			//printUserNames();
 			return true;
 		}
 		return false;

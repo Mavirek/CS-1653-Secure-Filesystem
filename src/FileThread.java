@@ -48,7 +48,7 @@ public class FileThread extends Thread
 						ArrayList<ShareFile> list = FileServer.fileList.getFiles();
 						
 						ArrayList<String> groups = (ArrayList<String>)ut.getGroups(); 
-						System.out.println("list size: " + list.size() + " groups size: " + groups.size()); 
+						//System.out.println("list size: " + list.size() + " groups size: " + groups.size()); 
 						ArrayList<String> result = new ArrayList<String>(); 
 						for(int i = 0; i < groups.size(); i++)
 						{
@@ -56,7 +56,7 @@ public class FileThread extends Thread
 							{
 								if(list.get(j).getGroup().equals(groups.get(i)))
 								{
-									System.out.println("owner: "+list.get(j).getOwner()+" group: "+list.get(j).getGroup()+" path: "+list.get(j).getPath());
+									//System.out.println("owner: "+list.get(j).getOwner()+" group: "+list.get(j).getGroup()+" path: "+list.get(j).getPath());
 									result.add(list.get(j).getPath()); 
 								}									
 							}
@@ -224,7 +224,7 @@ public class FileThread extends Thread
 				else if (e.getMessage().compareTo("DELETEF")==0) {
 
 					String remotePath = (String)e.getObjContents().get(0);
-					System.out.println("remotePath = "+remotePath);
+					//System.out.println("remotePath = "+remotePath);
 					Token t = (Token)e.getObjContents().get(1);
 					ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
 					if (sf == null) {
