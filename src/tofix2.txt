@@ -1,4 +1,0 @@
-1. deleteGroup
-2. listMembers
-3. deleteFile
-4. download?
