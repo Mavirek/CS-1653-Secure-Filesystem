@@ -51,7 +51,6 @@ public class GroupThread extends Thread
 						response = new Envelope("OK");
 						response.addObject(yourToken);
 						output.writeObject(response);
-						//updateUserList();
 					}
 				}
 				else if(message.getMessage().equals("CUSER")) //Client wants to create a user
@@ -74,7 +73,6 @@ public class GroupThread extends Thread
 								if(createUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									//updateUserList();
 								}
 							}
 						}
@@ -103,7 +101,6 @@ public class GroupThread extends Thread
 								if(deleteUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									//updateUserList();
 								}
 							}
 						}
@@ -132,7 +129,6 @@ public class GroupThread extends Thread
 								if(cGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									//updateUserList();
 								}
 							}
 						}
@@ -160,7 +156,6 @@ public class GroupThread extends Thread
 								if(deleteGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									//updateUserList();
 								}
 							}
 						}
@@ -191,8 +186,6 @@ public class GroupThread extends Thread
 									{
 										response = new Envelope("OK"); //Success
 										response.addObject(g.getUsers());
-										System.out.println(Arrays.toString(g.getUsers().toArray(new String[g.getUsers().size()]))); 
-										//updateUserList();
 									}
 								}
 							}
@@ -223,17 +216,14 @@ public class GroupThread extends Thread
 								Token yourToken = (Token)message.getObjContents().get(2); //Extract the token
 								if(my_gs.gList.containsKey(group))  //Group exists
 								{
-									System.out.println("group exists");
 									Group g = my_gs.gList.get(group);
 									if(g.getOwner().equals(yourToken.getSubject())) //User calling is owner
 									{
 										if(!my_gs.gList.get(group).getUsers().contains(userToBeAdded))
 										{
-											System.out.println("ADDING USER TO GROUP!!!!!"); 
 											my_gs.gList.get(group).addUser(userToBeAdded); 
 											my_gs.userList.addGroup(userToBeAdded, group); 
 											response = new Envelope("OK"); //Success
-											//updateUserList();
 										}
 									}
 								}
@@ -273,7 +263,6 @@ public class GroupThread extends Thread
 												my_gs.gList.get(group).removeUser(userToBeRemoved); 
 												my_gs.userList.removeGroup(userToBeRemoved, group); 
 												response = new Envelope("OK"); //Success
-												//updateUserList();
 											}
 										}
 									}
@@ -329,7 +318,6 @@ public class GroupThread extends Thread
 		{
 			//Issue a new token with server's name, user's name, and user's groups
 			UserToken yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username));
-			System.out.println("INSIDE CREATETOKEN"); 
 			return yourToken;
 		}
 		else
@@ -440,7 +428,6 @@ public class GroupThread extends Thread
 	{
 		if(!my_gs.gList.containsKey(groupName))
 		{
-			System.out.println("INSIDE CGROUP"); 
 			my_gs.gList.put(groupName,new Group(groupName, user.getSubject())); 
 			user.addGroup(groupName); 
 			my_gs.userList.addGroup(user.getSubject(), groupName); 

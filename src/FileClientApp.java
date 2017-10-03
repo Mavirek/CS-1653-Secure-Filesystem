@@ -29,7 +29,6 @@ public class FileClientApp
 					{
 						System.out.println("Connected to Group Server: "+args[1]+" Port: "+args[3]);
 						int x = 0; 
-						//userToken = (Token) gc.getToken(args[0]);
 						do{
 							System.out.println();
 							System.out.println("Please Select an Option");
@@ -237,15 +236,14 @@ public class FileClientApp
 							System.out.println("Error Class Not found ");
 							System.exit(-1);
 						}
-						//System.out.println("FILESERVER TOKEN PRINT:"); 
 						Token t = new Token("FilePile", args[0], userList.getUserGroups(args[0])); 
 						userToken = (Token) gc.getToken(args[0]);
-						//t.print();
 						
 						Scanner s = new Scanner(System.in);
 						System.out.println("Connected to File Server: "+args[2]+" Port: "+args[4]);
 						int y = 0; 
 						do{
+							System.out.println();
 							System.out.println("Please Select an Option");
 							System.out.println("1: Delete"); 
 							System.out.println("2: Download"); 

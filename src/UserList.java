@@ -46,7 +46,6 @@ import java.util.*;
 		public synchronized void addGroup(String user, String groupname)
 		{
 			list.get(user).addGroup(groupname);
-			System.out.println("INSIDE USERLIST: Add Group " + groupname + " for user " + user); 
 		}
 		
 		public synchronized void removeGroup(String user, String groupname)
