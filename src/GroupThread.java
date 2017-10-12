@@ -214,6 +214,7 @@ public class GroupThread extends Thread
 								String userToBeAdded = (String)message.getObjContents().get(0); 
 								String group = (String) message.getObjContents().get(1); //Extract the groupname
 								Token yourToken = (Token)message.getObjContents().get(2); //Extract the token
+								
 								if(my_gs.gList.containsKey(group))  //Group exists
 								{
 									Group g = my_gs.gList.get(group);
@@ -221,12 +222,16 @@ public class GroupThread extends Thread
 									{
 										if(!my_gs.gList.get(group).getUsers().contains(userToBeAdded))
 										{
-											my_gs.gList.get(group).addUser(userToBeAdded); 
-											my_gs.userList.addGroup(userToBeAdded, group); 
-											response = new Envelope("OK"); //Success
+											if(my_gs.userList.checkUser(userToBeAdded))
+											{
+												my_gs.gList.get(group).addUser(userToBeAdded);
+												my_gs.userList.addGroup(userToBeAdded, group);
+												response = new Envelope("OK"); //Success
+											}
 										}
 									}
 								}
+								
 							}
 						}
 					}
@@ -256,9 +261,9 @@ public class GroupThread extends Thread
 									Group g = my_gs.gList.get(group);
 									if(g.getOwner().equals(yourToken.getSubject())) //User calling is owner
 									{
-										if(my_gs.gList.get(group).getUsers().contains(userToBeRemoved)) //User can't remove themselves 
+										if(my_gs.gList.get(group).getUsers().contains(userToBeRemoved)) 
 										{
-											if(!userToBeRemoved.equals(yourToken.getSubject()))
+											if(!userToBeRemoved.equals(yourToken.getSubject()))//User can't remove themselves 
 											{
 												my_gs.gList.get(group).removeUser(userToBeRemoved); 
 												my_gs.userList.removeGroup(userToBeRemoved, group); 

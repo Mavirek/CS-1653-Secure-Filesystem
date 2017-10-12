@@ -211,33 +211,8 @@ public class FileClientApp
 					}
 					if(fc.connect(args[2],Integer.parseInt(args[4])))
 					{
-						String userFile = "UserList.bin";
-						UserList userList = null; 
-						ObjectInputStream userStream;
-						try
-						{
-							FileInputStream fis = new FileInputStream(userFile);
-							userStream = new ObjectInputStream(fis);
-							userList = (UserList)userStream.readObject();
-							
-						}
-						catch(FileNotFoundException e)
-						{
-							System.err.println(e); 
-							System.exit(1); 
-						}
-						catch(IOException e)
-						{
-							System.out.println("Error reading from UserList file");
-							System.exit(-1);
-						}
-						catch(ClassNotFoundException e)
-						{
-							System.out.println("Error Class Not found ");
-							System.exit(-1);
-						}
-						Token t = new Token("FilePile", args[0], userList.getUserGroups(args[0])); 
-						userToken = (Token) gc.getToken(args[0]);
+						
+						Token t = userToken;
 						
 						Scanner s = new Scanner(System.in);
 						System.out.println("Connected to File Server: "+args[2]+" Port: "+args[4]);
