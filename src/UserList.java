@@ -32,7 +32,7 @@ import java.util.*;
 				return false;
 			}
 		}
-
+		
 		public synchronized ArrayList<String> getUserGroups(String username)
 		{
 			return list.get(username).getGroups();
@@ -63,13 +63,13 @@ import java.util.*;
 			list.get(user).removeOwnership(groupname);
 		}
 		public synchronized void setPassword(String user, String pass)
-		{
-			list.get(user).setPass(pass); 
-		}
-		public synchronized boolean checkPass(String user, String pass)
-		{
-			return list.get(user).checkPW(pass); 
-		}
+ 		{
+ 			list.get(user).setPass(pass); 
+ 		}
+ 		public synchronized boolean checkPass(String user, String pass)
+ 		{
+ 			return list.get(user).checkPW(pass); 
+ 		}
 	
 	class User implements java.io.Serializable {
 
@@ -79,7 +79,7 @@ import java.util.*;
 		private static final long serialVersionUID = -6699986336399821598L;
 		private ArrayList<String> groups;
 		private ArrayList<String> ownership;
-		private String password; 
+		private String password = ""; 
 		public User()
 		{
 			groups = new ArrayList<String>();
@@ -95,19 +95,19 @@ import java.util.*;
 		{
 			return ownership;
 		}
-		public void setPass(String newPass)
-		{
-			password = newPass; 
-		}
-		public boolean checkPW(String pass)
-		{
-			return password.equals(pass); 
-		}
+		
 		public void addGroup(String group)
 		{
 			groups.add(group);
 		}
-		
+		public void setPass(String newPass)
+ 		{
+ 			password = newPass; 
+ 		}
+ 		public boolean checkPW(String pass)
+ 		{
+ 			return password.equals(pass); 
+ 		}
 		public void removeGroup(String group)
 		{
 			if(!groups.isEmpty())

@@ -1,22 +1,14 @@
 import java.io.*;
 import java.util.*;
-import java.security.*;
-import java.security.NoSuchAlgorithmException; 
-import javax.crypto.Cipher; 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Hex; 
-import javax.crypto.spec.IvParameterSpec; 
-import javax.crypto.SecretKey; 
-import javax.crypto.KeyGenerator; 
 
 public class FileClientApp
 {
-	protected static String userToken = null; 
+	protected static Token userToken = null; 
 	public static void main(String[] args)
 	{
 		if(args.length != 5)
 		{
-			System.err.println("Usage: java FileClientApp <Username> <Password> <Group Server Name> <File Server Name> <Group Port> <File Port>\n");
+			System.err.println("Usage: java FileClientApp <Username> <Group Server Name> <File Server Name> <Group Port> <File Port>\n");
 			System.exit(-1);
 		}
 
@@ -33,10 +25,9 @@ public class FileClientApp
 			switch(z)
 			{
 				case 1: 
-					if(gc.connect(args[2],Integer.parseInt(args[4]), args[0], args[1]))
+					if(gc.connect(args[1],Integer.parseInt(args[3])))
 					{
-						
-						System.out.println("Connected to Group Server: "+args[2]+" Port: "+args[4]);
+						System.out.println("Connected to Group Server: "+args[1]+" Port: "+args[3]);
 						int x = 0; 
 						do{
 							System.out.println();
@@ -55,7 +46,7 @@ public class FileClientApp
 							switch(x)
 							{
 								case 1: 
-									userToken = (String) gc.getToken(args[0]);
+									userToken = (Token) gc.getToken(args[0]);
 									if(userToken==null)
 									{
 										System.out.println("Error: Token could not be created. User does not exist\nDisconnecting..");
@@ -69,7 +60,7 @@ public class FileClientApp
 										if(gc.createUser(sc.nextLine(), userToken))
 										{
 											System.out.println("User successfully created");
-											userToken = (String) gc.getToken(args[0]);
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -86,7 +77,7 @@ public class FileClientApp
 										if(gc.deleteUser(sc.nextLine(), userToken))
 										{
 											System.out.println("User successfully deleted");
-											userToken = (String) gc.getToken(args[0]);
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -103,7 +94,7 @@ public class FileClientApp
 										if(gc.createGroup(sc.nextLine(), userToken))
 										{
 											System.out.println("Group successfully created");
-											userToken = (String) gc.getToken(args[0]);
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -120,7 +111,7 @@ public class FileClientApp
 										if(gc.deleteGroup(sc.nextLine(), userToken))
 										{
 											System.out.println("Group successfully deleted");
-											userToken = (String) gc.getToken(args[0]);
+											userToken = (Token) gc.getToken(args[0]);
 										}
 										else
 										{
@@ -218,13 +209,13 @@ public class FileClientApp
 						System.out.println("Please Connect to Group Server and Get a Token"); 
 						break; 
 					}
-					if(fc.connect(args[3],Integer.parseInt(args[5])))
+					if(fc.connect(args[2],Integer.parseInt(args[4])))
 					{
 						
-						String t = userToken;
+						Token t = userToken;
 						
 						Scanner s = new Scanner(System.in);
-						System.out.println("Connected to File Server: "+args[3]+" Port: "+args[5]);
+						System.out.println("Connected to File Server: "+args[2]+" Port: "+args[4]);
 						int y = 0; 
 						do{
 							System.out.println();

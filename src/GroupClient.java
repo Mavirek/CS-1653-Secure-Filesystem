@@ -5,28 +5,18 @@ import java.util.List;
 import java.io.ObjectInputStream;
 import java.io.*;
 import java.util.*;
-import java.security.*;
-import java.security.NoSuchAlgorithmException; 
-import javax.crypto.Cipher; 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import javax.crypto.spec.IvParameterSpec; 
-import javax.crypto.SecretKey; 
-import javax.crypto.KeyGenerator; 
 import java.util.Random; 
 import org.bouncycastle.crypto.digests.SHA256Digest; 
 import org.bouncycastle.crypto.macs.HMac; 
 import org.bouncycastle.crypto.params.KeyParameter; 
 import org.bouncycastle.util.encoders.Hex; 
 import javax.crypto.Mac;
-
-
 public class GroupClient extends Client implements GroupClientInterface {
-	// Get group server's public key 
+     // Get group server's public key 
 	 private Envelope groupPubKey = (Envelope)input.readObject(); 
-	 private PublicKey groupPK = groupPubKey.getObjContents().get(0); 
+	 private PublicKey groupPK = groupPubKey.getObjContents().get(0);
 	 
-	 
-	 public boolean connect(final String server, final int port, String username, String password) {
+ 	 public boolean connect(final String server, final int port, String username, String password) {
 		if(!super(server, port))
 			return false; 
 		Envelope message = null, response = null; 
@@ -36,7 +26,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 		//Generate a hash of the password
 		Cipher enc = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC"); 
 		enc.init(Cipher.ENCRYPT_MODE, groupPK); 
-		String encryptedHash = enc.doFinal(hash("key", password).toByteArray()); 
+		String encryptedHash = enc.doFinal(hash("key", password).toByteArray()); //Need to change hash to sha from HMAC-sha
 		String encryptedUN = enc.doFinal(username.toByteArray()); 
 		
 		message.addObject(encryptedUN);
@@ -48,11 +38,12 @@ public class GroupClient extends Client implements GroupClientInterface {
 		return false; 
 		
 	 }
-	 public String getToken(String username)
+	 
+	 public UserToken getToken(String username)
 	 {
 		try
 		{
-			String token = null;
+			UserToken token = null;
 			Envelope message = null, response = null;
 		 		 	
 			//Tell the server to return a token.
@@ -72,7 +63,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				
 				if(temp.size() == 1)
 				{
-					token = (String)temp.get(0);
+					token = (UserToken)temp.get(0);
 					System.out.println("Token Created"); 
 					return token;
 				}
@@ -89,7 +80,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 		
 	 }
 	 
-	 public boolean createUser(String username, String token)
+	 public boolean createUser(String username, UserToken token)
 	 {
 		 try
 			{
@@ -118,7 +109,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 	 
-	 public boolean deleteUser(String username, String token)
+	 public boolean deleteUser(String username, UserToken token)
 	 {
 		 try
 			{
@@ -148,7 +139,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 	 
-	 public boolean createGroup(String groupname, String token)
+	 public boolean createGroup(String groupname, UserToken token)
 	 {
 		 try
 			{
@@ -177,7 +168,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 	 
-	 public boolean deleteGroup(String groupname, String token)
+	 public boolean deleteGroup(String groupname, UserToken token)
 	 {
 		 try
 			{
@@ -206,7 +197,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 }
 	 
 	 @SuppressWarnings("unchecked")
-	public List<String> listMembers(String group, String token)
+	public List<String> listMembers(String group, UserToken token)
 	 {
 		 try
 		 {
@@ -238,7 +229,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 	 
-	 public boolean addUserToGroup(String username, String groupname, String token)
+	 public boolean addUserToGroup(String username, String groupname, UserToken token)
 	 {
 		 try
 			{
@@ -267,7 +258,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 	 
-	 public boolean deleteUserFromGroup(String username, String groupname, String token)
+	 public boolean deleteUserFromGroup(String username, String groupname, UserToken token)
 	 {
 		 try
 			{
@@ -302,13 +293,13 @@ public class GroupClient extends Client implements GroupClientInterface {
 		hmacSha256.init(secretKey);
 		return bytesToHex(hmacSha256.doFinal(msg.getBytes("UTF-8")));
 	}
-	
-	public static String bytesToHex(byte[] in) {
-		final StringBuilder builder = new StringBuilder();
-		for(byte b : in) {
-			builder.append(String.format("%02x", b));
-		}
-		return builder.toString();
-	}
+ 	
+ 	public static String bytesToHex(byte[] in) {
+ 		final StringBuilder builder = new StringBuilder();
+ 		for(byte b : in) {
+ 			builder.append(String.format("%02x", b));
+ 		}
+ 		return builder.toString();
+ 	}
 
 }

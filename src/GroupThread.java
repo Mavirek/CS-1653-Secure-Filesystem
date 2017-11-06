@@ -5,7 +5,7 @@ import java.lang.Thread;
 import java.net.Socket;
 import java.io.*;
 import java.util.*;
-import java.math.*; 
+import java.math.*;
 import java.security.*;
 import java.security.NoSuchAlgorithmException; 
 import javax.crypto.Cipher; 
@@ -13,12 +13,13 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex; 
 import javax.crypto.spec.IvParameterSpec; 
 import javax.crypto.SecretKey; 
-import javax.crypto.KeyGenerator; 
+import javax.crypto.KeyGenerator;  
+
 public class GroupThread extends Thread 
 {
 	private final Socket socket;
 	private GroupServer my_gs;
-
+	
 	public GroupThread(Socket _socket, GroupServer _gs)
 	{
 		socket = _socket;
@@ -44,6 +45,7 @@ public class GroupThread extends Thread
 			Envelope pubKey = new Envelope("GROUP PUB KEY"); 
 			pubKey.addObject(groupPubKey); 
 			output.writeObject(pubKey);
+			
 			do
 			{
 				Envelope message = (Envelope)input.readObject();
@@ -61,7 +63,7 @@ public class GroupThread extends Thread
 					}
 					else
 					{
-						String yourToken = createToken(username); //Create a token
+						UserToken yourToken = createToken(username); //Create a token
 						
 						//Respond to the client. On error, the client will receive a null token
 						response = new Envelope("OK");
@@ -84,9 +86,9 @@ public class GroupThread extends Thread
 							if(message.getObjContents().get(1) != null)
 							{
 								String username = (String)message.getObjContents().get(0); //Extract the username
-								String yourToken = (String)message.getObjContents().get(1); //Extract the token
+								Token yourToken = (Token)message.getObjContents().get(1); //Extract the token
 								
-								if(createUser(username, new Token(yourToken)))
+								if(createUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
 								}
@@ -112,9 +114,9 @@ public class GroupThread extends Thread
 							if(message.getObjContents().get(1) != null)
 							{
 								String username = (String)message.getObjContents().get(0); //Extract the username
-								String yourToken = (String)message.getObjContents().get(1); //Extract the token
+								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 								
-								if(deleteUser(username,new Token(yourToken)))
+								if(deleteUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
 								}
@@ -140,9 +142,9 @@ public class GroupThread extends Thread
 							if(message.getObjContents().get(1) != null)
 							{
 								String group = (String)message.getObjContents().get(0); //Extract the groupname
-								String yourToken = (String)message.getObjContents().get(1); //Extract the token
+								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 								
-								if(cGroup(group, new Token(yourToken)))
+								if(cGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
 								}
@@ -167,9 +169,9 @@ public class GroupThread extends Thread
 							if(message.getObjContents().get(1) != null)
 							{
 								String group = (String)message.getObjContents().get(0); //Extract the groupname
-								String yourToken = (String)message.getObjContents().get(1); //Extract the token
+								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 								
-								if(deleteGroup(group, new Token(yourToken)))
+								if(deleteGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
 								}
@@ -194,11 +196,11 @@ public class GroupThread extends Thread
 							if(message.getObjContents().get(1) != null)
 							{
 								String group = (String)message.getObjContents().get(0); //Extract the groupname
-								String yourToken = (String)message.getObjContents().get(1); //Extract the token
+								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 								if(my_gs.gList.containsKey(group))  //Group exists
 								{
 									Group g = my_gs.gList.get(group);
-									if(g.getOwner().equals((new Token(yourToken)).getSubject())) //User is owner
+									if(g.getOwner().equals(yourToken.getSubject())) //User is owner
 									{
 										response = new Envelope("OK"); //Success
 										response.addObject(g.getUsers());
@@ -229,12 +231,12 @@ public class GroupThread extends Thread
 								
 								String userToBeAdded = (String)message.getObjContents().get(0); 
 								String group = (String) message.getObjContents().get(1); //Extract the groupname
-								String yourToken = (String)message.getObjContents().get(2); //Extract the token
+								Token yourToken = (Token)message.getObjContents().get(2); //Extract the token
 								
 								if(my_gs.gList.containsKey(group))  //Group exists
 								{
 									Group g = my_gs.gList.get(group);
-									if(g.getOwner().equals((new Token(yourToken)).getSubject())) //User calling is owner
+									if(g.getOwner().equals(yourToken.getSubject())) //User calling is owner
 									{
 										if(!my_gs.gList.get(group).getUsers().contains(userToBeAdded))
 										{
@@ -271,15 +273,15 @@ public class GroupThread extends Thread
 								
 								String userToBeRemoved = (String)message.getObjContents().get(0); 
 								String group = (String) message.getObjContents().get(1); //Extract the groupname
-								String yourToken = (String)message.getObjContents().get(2); //Extract the token
+								UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
 								if(my_gs.gList.containsKey(group))  //Group exists
 								{
 									Group g = my_gs.gList.get(group);
-									if(g.getOwner().equals((new Token(yourToken)).getSubject())) //User calling is owner
+									if(g.getOwner().equals(yourToken.getSubject())) //User calling is owner
 									{
 										if(my_gs.gList.get(group).getUsers().contains(userToBeRemoved)) 
 										{
-											if(!userToBeRemoved.equals((new Token(yourToken)).getSubject()))//User can't remove themselves 
+											if(!userToBeRemoved.equals(yourToken.getSubject()))//User can't remove themselves 
 											{
 												my_gs.gList.get(group).removeUser(userToBeRemoved); 
 												my_gs.userList.removeGroup(userToBeRemoved, group); 
@@ -367,14 +369,14 @@ public class GroupThread extends Thread
 	}
 	
 	//Method to create tokens
-	private String createToken(String username) 
+	private UserToken createToken(String username) 
 	{
 		//Check that user exists
 		if(my_gs.userList.checkUser(username))
 		{
 			//Issue a new token with server's name, user's name, and user's groups
 			UserToken yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username));
-			return yourToken.toString();
+			return yourToken;
 		}
 		else
 		{

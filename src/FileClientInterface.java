@@ -37,7 +37,7 @@ public interface FileClientInterface
      * @return A list of filenames
      *
      */
-    public List<String> listFiles(final String token);
+    public List<String> listFiles(final UserToken token);
 
 
     /**
@@ -54,7 +54,7 @@ public interface FileClientInterface
      * @return true on success, false on failure
      *
      */
-    public boolean upload(final String sourceFile, final String destFile, final String group, final String token);
+    public boolean upload(final String sourceFile, final String destFile, final String group, final UserToken token);
 
 
     /**
@@ -68,7 +68,7 @@ public interface FileClientInterface
      * @return true on success, false on failure
      *
      */
-    public boolean download(final String sourceFile, final String destFile, final String token);
+    public boolean download(final String sourceFile, final String destFile, final UserToken token);
 
 
     /**
@@ -81,7 +81,7 @@ public interface FileClientInterface
      * @return true on success, false on failure
      *
      */
-    public boolean delete(final String filename, final String token);
+    public boolean delete(final String filename, final UserToken token);
 
 
 }  //-- end interface FileClientInterface

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class FileClient extends Client implements FileClientInterface {
 
-	public boolean delete(String filename, String token) {
+	public boolean delete(String filename, UserToken token) {
 		String remotePath;
 		if (filename.charAt(0)=='/') {
 			remotePath = filename.substring(1);
@@ -39,7 +39,7 @@ public class FileClient extends Client implements FileClientInterface {
 		return true;
 	}
 
-	public boolean download(String sourceFile, String destFile, String token) {
+	public boolean download(String sourceFile, String destFile, UserToken token) {
 				if (sourceFile.charAt(0)=='/') {
 					sourceFile = sourceFile.substring(1);
 				}
@@ -101,7 +101,7 @@ public class FileClient extends Client implements FileClientInterface {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<String> listFiles(String token) {
+	public List<String> listFiles(UserToken token) {
 		 try
 		 {
 			 Envelope message = null, e = null;
@@ -130,7 +130,7 @@ public class FileClient extends Client implements FileClientInterface {
 	}
 
 	public boolean upload(String sourceFile, String destFile, String group,
-			String token) {
+			UserToken token) {
 			
 		if (destFile.charAt(0)!='/') {
 			 destFile = "/" + destFile;

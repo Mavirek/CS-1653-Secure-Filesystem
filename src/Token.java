@@ -12,6 +12,8 @@ public class Token implements UserToken, java.io.Serializable{
 	private String subject; 
 	private ArrayList<String> groups = new ArrayList<String>(); 
 	private boolean isAdmin; 
+	private String hash; 
+	private String signedHash; 
 	public Token()
 	{
 		issuer = "Group"; 
@@ -74,5 +76,21 @@ public class Token implements UserToken, java.io.Serializable{
 			builder.append(groupsArr[i] + ":"); 
 		}
 		return builder.toString(); 
+	}
+	public void setHash(String newHash)
+	{
+		hash = newHash; 
+	}
+/*	public String getHash()
+	{
+		return hash; 
+	}*/
+	public void signHash(PrivateKey pk)
+	{
+		//signedHash = [hash]pk; 
+	}
+	public String getSignedHash()
+	{
+		return signedHash; 
 	}
 }
