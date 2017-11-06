@@ -5,8 +5,25 @@ import java.util.List;
 import java.io.ObjectInputStream;
 import java.io.*;
 import java.util.*;
+import java.security.*;
+import java.security.NoSuchAlgorithmException; 
+import javax.crypto.Cipher; 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex; 
+import javax.crypto.spec.IvParameterSpec; 
+import javax.crypto.SecretKey; 
+import javax.crypto.KeyGenerator; 
+
 public class GroupClient extends Client implements GroupClientInterface {
  
+	 public boolean connect(final String server, final int port) {
+		super(server, port); 
+		System.out.println("Please enter a Password: ");
+		Scanner sc = new Scanner(System.in); 
+		String password = sc.nextLine(); 
+		Envelope message = null, response = null; 
+		message = new Envelope("CHECK"); 
+	 }
 	 public UserToken getToken(String username)
 	 {
 		try

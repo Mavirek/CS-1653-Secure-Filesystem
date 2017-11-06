@@ -5,12 +5,12 @@ import java.lang.Thread;
 import java.net.Socket;
 import java.io.*;
 import java.util.*;
-
+import java.math.*; 
 public class GroupThread extends Thread 
 {
 	private final Socket socket;
 	private GroupServer my_gs;
-	
+
 	public GroupThread(Socket _socket, GroupServer _gs)
 	{
 		socket = _socket;
@@ -282,6 +282,24 @@ public class GroupThread extends Thread
 					updateUserList();
 					socket.close(); //Close the socket
 					proceed = false; //End this communication loop
+				}
+				else if(message.getMessage().equals("CHECK")) //Check Password 
+				{
+					//decrypt envelope 
+					if(my_gs.userList.containsKey(userName))
+					{
+						BigInteger g = new BigInteger((long)2); 
+						BigInteger q = new BigInteger(my_gs.G, 16); 
+						BigInteger newPass = g.modPow(hash, q);
+						my_gs.userList.checkPW(userName, newPass.toString()); 
+					}
+					else
+					{
+						response = new Envelope("USER NOT FOUND ERROR"); 
+						updateUserList(); 
+						socket.close(); 
+						proceed = false; 
+					}
 				}
 				else
 				{
