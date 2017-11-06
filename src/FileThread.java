@@ -44,10 +44,10 @@ public class FileThread extends Thread
 						response = new Envelope("FAIL-BADTOKEN"); 
 					else{
 						//Change Token getGroups to the Hashtable 
-						UserToken ut = (Token)e.getObjContents().get(0); 
+						String ut = (String)e.getObjContents().get(0); 
 						ArrayList<ShareFile> list = FileServer.fileList.getFiles();
 						
-						ArrayList<String> groups = (ArrayList<String>)ut.getGroups(); 
+						ArrayList<String> groups = (ArrayList<String>)(new Token(ut)).getGroups(); 
 						//System.out.println("list size: " + list.size() + " groups size: " + groups.size()); 
 						ArrayList<String> result = new ArrayList<String>(); 
 						for(int i = 0; i < groups.size(); i++)
@@ -87,13 +87,13 @@ public class FileThread extends Thread
 						else {
 							String remotePath = (String)e.getObjContents().get(0);
 							String group = (String)e.getObjContents().get(1);
-							UserToken yourToken = (UserToken)e.getObjContents().get(2); //Extract token
+							String yourToken = (String)e.getObjContents().get(2); //Extract token
 
 							if (FileServer.fileList.checkFile(remotePath)) {
 								System.out.printf("Error: file already exists at %s\n", remotePath);
 								response = new Envelope("FAIL-FILEEXISTS"); //Success
 							}
-							else if (!yourToken.getGroups().contains(group)) {
+							else if (!(new Token(yourToken)).getGroups().contains(group)) {
 								System.out.printf("Error: user missing valid token for group %s\n", group);
 								response = new Envelope("FAIL-UNAUTHORIZED"); //Success
 							}
@@ -116,7 +116,7 @@ public class FileThread extends Thread
 
 								if(e.getMessage().compareTo("EOF")==0) {
 									System.out.printf("Transfer successful file %s\n", remotePath);
-									FileServer.fileList.addFile(yourToken.getSubject(), group, remotePath);
+									FileServer.fileList.addFile((new Token(yourToken)).getSubject(), group, remotePath);
 									response = new Envelope("OK"); //Success
 								}
 								else {
@@ -133,7 +133,7 @@ public class FileThread extends Thread
 				else if (e.getMessage().compareTo("DOWNLOADF")==0) {
 
 					String remotePath = (String)e.getObjContents().get(0);
-					Token t = (Token)e.getObjContents().get(1);
+					String t = (String)e.getObjContents().get(1);
 					ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
 					if (sf == null) {
 						System.out.printf("Error: File %s doesn't exist\n", remotePath);
@@ -141,8 +141,8 @@ public class FileThread extends Thread
 						output.writeObject(e);
 
 					}
-					else if (!t.getGroups().contains(sf.getGroup())){
-						System.out.printf("Error user %s doesn't have permission\n", t.getSubject());
+					else if (!(new Token(t)).getGroups().contains(sf.getGroup())){
+						System.out.printf("Error user %s doesn't have permission\n", (new Token(t)).getSubject());
 						e = new Envelope("ERROR_PERMISSION");
 						output.writeObject(e);
 					}
@@ -225,14 +225,14 @@ public class FileThread extends Thread
 
 					String remotePath = (String)e.getObjContents().get(0);
 					//System.out.println("remotePath = "+remotePath);
-					Token t = (Token)e.getObjContents().get(1);
+					String t = (String)e.getObjContents().get(1);
 					ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
 					if (sf == null) {
 						System.out.printf("Error: File %s doesn't exist\n", remotePath);
 						e = new Envelope("ERROR_DOESNTEXIST");
 					}
-					else if (!t.getGroups().contains(sf.getGroup())){
-						System.out.printf("Error user %s doesn't have permission\n", t.getSubject());
+					else if (!(new Token(t)).getGroups().contains(sf.getGroup())){
+						System.out.printf("Error user %s doesn't have permission\n", (new Token(t)).getSubject());
 						e = new Envelope("ERROR_PERMISSION");
 					}
 					else {

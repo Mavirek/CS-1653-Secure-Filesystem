@@ -17,6 +17,15 @@ public class Token implements UserToken, java.io.Serializable{
 		issuer = "Group"; 
 		subject = "ADMIN OF ADMIN"; 
 	}
+	//subject:issuer:group1:group2:...:
+	public Token(String tk)
+	{
+		String[] attributes = tk.split(":"); 
+		subject = attributes[0]; 
+		issuer = attributes[1]; 
+		for(int i = 2; i < attributes.length; i++)
+			groups.add(attributes[i]); 
+	}
 	public Token(ArrayList<String> g)
 	{
 		groups = g; 
@@ -50,14 +59,20 @@ public class Token implements UserToken, java.io.Serializable{
 	public boolean isAdministrator(){
 		return isAdmin; 
 	}
-	public void print()
+	//subject:issuer:group1:group2:...:
+	public String toString()
 	{
-		System.out.println("Issuer: " + issuer); 
-		System.out.println("Subject: " + subject); 
-		System.out.println(groups.size()); 
-		for(int i = 0; i < groups.size(); i++)
+		StringBuilder builder = new StringBuilder();
+		builder.append(subject); 
+		builder.append(":"); 
+		builder.append(issuer);
+		builder.append(":"); 
+		String[] groupsArr = groups.toArray(new String[groups.size()]); 
+		Arrays.sort(groupsArr); 
+		for(int i = 0; i < groupsArr.length; i++)
 		{
-			System.out.println("Group " + i + ": " + groups.get(i)); 
+			builder.append(groupsArr[i] + ":"); 
 		}
+		return builder.toString(); 
 	}
 }
