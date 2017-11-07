@@ -22,7 +22,7 @@ public class GroupServer extends Server {
 	public UserList userList;
 	public Hashtable<String, Group> gList = new Hashtable<String, Group>();
 
-	
+
 	public GroupServer() {
 		super(SERVER_PORT, "ALPHA");
 	}
@@ -42,6 +42,7 @@ public class GroupServer extends Server {
 		String username="";
 		String password = "";
 		String hashPass;
+		String storePass;
 
 		//This runs a thread that saves the lists on program exit
 		Runtime runtime = Runtime.getRuntime();
@@ -63,6 +64,9 @@ public class GroupServer extends Server {
 			System.out.print("Enter your password: ");
  			password = console.next();
 			hashPass = EncryptDecrypt.hash(password);
+			storePass = EncryptDecrypt.passDH(hashPass);
+
+			System.out.println("Pass to store : " + storePass);
 
  			//BigInteger g = new BigInteger((long)2);
  			//BigInteger q = new BigInteger(G, 16);
@@ -70,7 +74,7 @@ public class GroupServer extends Server {
 			//Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
 			userList = new UserList();
 			userList.addUser(username);
-			userList.setPassword(username, hashPass);
+			userList.setPassword(username, storePass);
 			userList.addGroup(username, "ADMIN");
 			userList.addOwnership(username, "ADMIN");
 		}

@@ -18,13 +18,17 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 private Envelope groupPubKey;
 	 private Key groupPK;
 
- 	 public boolean connect(final String server, final int port, String username, String password) throws IOException, ClassNotFoundException{
+ 	 public boolean connect(final String server, final int port, String username) throws IOException, ClassNotFoundException{
 		if(!super.connect(server, port))
 			return false;
 		Envelope message = null, response = null;
 
 		groupPubKey = (Envelope)input.readObject();
 		groupPK = (Key)groupPubKey.getObjContents().get(0);
+
+
+
+		System.out.println("Group pub key : " + groupPK);
 
 		message = new Envelope("CHECK");
 
@@ -33,7 +37,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 		String[] toEncrypt = new String[2];
 		toEncrypt[0] = username;
-		toEncrypt[1] = EncryptDecrypt.hash(password);
+		toEncrypt[1] = EncryptDecrypt.passDH(EncryptDecrypt.hash(password));
+		System.out.println("Pass to compare : " + toEncrypt[1]);
 		String[] encrypted = EncryptDecrypt.rsaEncrypt(toEncrypt, groupPK);
 
 		message.addObject(encrypted[0]);

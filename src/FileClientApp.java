@@ -3,7 +3,7 @@ import java.util.*;
 
 public class FileClientApp
 {
-	protected static Token userToken = null; 
+	protected static Token userToken = null;
 	public static void main(String[] args)
 	{
 		if(args.length != 5)
@@ -15,37 +15,37 @@ public class FileClientApp
 		FileClient fc = new FileClient();
 		GroupClient gc = new GroupClient();
 		Scanner sc = new Scanner(System.in);
-		int z = 0; 
+		int z = 0;
 		do{
 			System.out.println("Please Select an Option");
-			System.out.println("1: Show Group Server Options"); 
-			System.out.println("2: Show File Server Options"); 
+			System.out.println("1: Show Group Server Options");
+			System.out.println("2: Show File Server Options");
 			System.out.println("3: Done");
-			z = sc.nextInt(); 
+			z = sc.nextInt();
 			switch(z)
 			{
-				case 1: 
+				case 1:
 					if(gc.connect(args[1],Integer.parseInt(args[3])))
 					{
 						System.out.println("Connected to Group Server: "+args[1]+" Port: "+args[3]);
-						int x = 0; 
+						int x = 0;
 						do{
 							System.out.println();
 							System.out.println("Please Select an Option");
-							System.out.println("1: Get a Token"); 
-							System.out.println("2: Create a User"); 
-							System.out.println("3: Delete a User"); 
+							System.out.println("1: Get a Token");
+							System.out.println("2: Create a User");
+							System.out.println("3: Delete a User");
 							System.out.println("4: Create a Group");
-							System.out.println("5: Delete a Group"); 
-							System.out.println("6: List Members"); 
+							System.out.println("5: Delete a Group");
+							System.out.println("6: List Members");
 							System.out.println("7: Add a User to a Group");
-							System.out.println("8: Delete a User From a Group"); 
-							System.out.println("9: Disconnect"); 
-							x = sc.nextInt(); 
-							sc.nextLine(); 
+							System.out.println("8: Delete a User From a Group");
+							System.out.println("9: Disconnect");
+							x = sc.nextInt();
+							sc.nextLine();
 							switch(x)
 							{
-								case 1: 
+								case 1:
 									userToken = (Token) gc.getToken(args[0]);
 									if(userToken==null)
 									{
@@ -54,7 +54,7 @@ public class FileClientApp
 									}
 									break;
 								case 2:
-									if(userToken != null)  
+									if(userToken != null)
 									{
 										System.out.println("Please enter the name of the new user: ");
 										if(gc.createUser(sc.nextLine(), userToken))
@@ -67,11 +67,11 @@ public class FileClientApp
 											System.out.println("Error: User could not be created");
 										}
 									}
-									else 
-										System.out.println("Please Select Option 1 to Get Token First"); 
-									break; 
-								case 3: 
-									if(userToken != null)  
+									else
+										System.out.println("Please Select Option 1 to Get Token First");
+									break;
+								case 3:
+									if(userToken != null)
 									{
 										System.out.println("Please enter the name of the user: ");
 										if(gc.deleteUser(sc.nextLine(), userToken))
@@ -84,13 +84,13 @@ public class FileClientApp
 											System.out.println("Error: User could not be deleted");
 										}
 									}
-									else 
-										System.out.println("Please Select Option 1 to Get Token First"); 
+									else
+										System.out.println("Please Select Option 1 to Get Token First");
 									break;
-								case 4: 
-									if(userToken != null)  
+								case 4:
+									if(userToken != null)
 									{
-										System.out.println("Group Name:"); 
+										System.out.println("Group Name:");
 										if(gc.createGroup(sc.nextLine(), userToken))
 										{
 											System.out.println("Group successfully created");
@@ -101,13 +101,13 @@ public class FileClientApp
 											System.out.println("Error: Group could not be created");
 										}
 									}
-									else 
-										System.out.println("Please Select Option 1 to Get Token First"); 
+									else
+										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 5:
-									if(userToken != null)  
+									if(userToken != null)
 									{
-										System.out.println("Group Name:"); 
+										System.out.println("Group Name:");
 										if(gc.deleteGroup(sc.nextLine(), userToken))
 										{
 											System.out.println("Group successfully deleted");
@@ -118,13 +118,13 @@ public class FileClientApp
 											System.out.println("Error: Group could not be deleted");
 										}
 									}
-									else 
-										System.out.println("Please Select Option 1 to Get Token First"); 
+									else
+										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 6:
-									if(userToken != null)  
+									if(userToken != null)
 									{
-										System.out.println("Group Name:"); 
+										System.out.println("Group Name:");
 										List<String> list = gc.listMembers(sc.nextLine(), userToken);
 										if(list!=null)
 										{
@@ -133,25 +133,25 @@ public class FileClientApp
 											{
 												for(String s : list)
 													if(!s.equals(null))
-														System.out.println(s); 
+														System.out.println(s);
 											}
 										}
 										else
 										{
 											System.out.println("Group does not exist");
 										}
-										
+
 									}
-									else 
-										System.out.println("Please Select Option 1 to Get Token First"); 
+									else
+										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 7:
-									if(userToken != null)  
+									if(userToken != null)
 									{
-										System.out.println("Group Name:"); 
-										String group = sc.nextLine(); 
+										System.out.println("Group Name:");
+										String group = sc.nextLine();
 										System.out.println("Username of the new user: ");
-										
+
 										if(gc.addUserToGroup(sc.nextLine(), group, userToken))
 										{
 											System.out.println("User successfully added");
@@ -162,14 +162,14 @@ public class FileClientApp
 											System.out.println("Error: User could not be added");
 										}
 									}
-									else 
-										System.out.println("Please Select Option 1 to Get Token First"); 
+									else
+										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 8:
-									if(userToken != null)  
+									if(userToken != null)
 									{
-										System.out.println("Group Name:"); 
-										String group = sc.nextLine(); 
+										System.out.println("Group Name:");
+										String group = sc.nextLine();
 										System.out.println("Username of the user: ");
 										if(gc.deleteUserFromGroup(sc.nextLine(), group, userToken))
 										{
@@ -181,56 +181,56 @@ public class FileClientApp
 											System.out.println("Error: User could not be deleted from group");
 										}
 									}
-									else 
-										System.out.println("Please Select Option 1 to Get Token First"); 
+									else
+										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 9:
 									userToken = (Token) gc.getToken(args[0]);
-									gc.disconnect(); 
-									System.out.println("Disconnected From Group Server"); 
-									break; 
+									gc.disconnect();
+									System.out.println("Disconnected From Group Server");
+									break;
 								default:
-									System.out.println("Invalid entry!"); 
-									x = 1; 
+									System.out.println("Invalid entry!");
+									x = 1;
 							}
 
 						}while(x > 0 && x < 9);
-						
+
 					}
 					else
 					{
 						System.out.println("Unable to connect");
 						System.exit(1);
 					}
-					break; 
-				case 2: 
+					break;
+				case 2:
 					if(userToken == null)
 					{
-						System.out.println("Please Connect to Group Server and Get a Token"); 
-						break; 
+						System.out.println("Please Connect to Group Server and Get a Token");
+						break;
 					}
 					if(fc.connect(args[2],Integer.parseInt(args[4])))
 					{
-						
+
 						Token t = userToken;
-						
+
 						Scanner s = new Scanner(System.in);
 						System.out.println("Connected to File Server: "+args[2]+" Port: "+args[4]);
-						int y = 0; 
+						int y = 0;
 						do{
 							System.out.println();
 							System.out.println("Please Select an Option");
-							System.out.println("1: Delete"); 
-							System.out.println("2: Download"); 
-							System.out.println("3: List Files"); 
-							System.out.println("4: Upload"); 
-							System.out.println("5: Disconnect"); 
-							y = s.nextInt(); 
+							System.out.println("1: Delete");
+							System.out.println("2: Download");
+							System.out.println("3: List Files");
+							System.out.println("4: Upload");
+							System.out.println("5: Disconnect");
+							y = s.nextInt();
 							s.nextLine();
 							switch(y)
 							{
-								case 1: 
-									System.out.println("Please enter a file name: "); 
+								case 1:
+									System.out.println("Please enter a file name: ");
 									if(fc.delete(s.nextLine(), t))
 									{
 										System.out.println("File successfully deleted");
@@ -242,9 +242,9 @@ public class FileClientApp
 									break;
 								case 2:
 									System.out.println("Please enter the Source File: ");
-									String sf = s.nextLine(); 
-									System.out.println("Please enter the Destination File: "); 
-									String df = s.nextLine(); 
+									String sf = s.nextLine();
+									System.out.println("Please enter the Destination File: ");
+									String df = s.nextLine();
 									if(fc.download(sf, df, t))
 									{
 										System.out.println("File successfully downloaded");
@@ -257,14 +257,14 @@ public class FileClientApp
 								case 3:
 									List<String> flist = fc.listFiles(t);
 									for(String c : flist)
-										System.out.println(c); 
-									
-									break; 
-								case 4: 
+										System.out.println(c);
+
+									break;
+								case 4:
 									System.out.println("Please enter the Source File: ");
-									String scf = s.nextLine(); 
-									System.out.println("Please enter the Destination File: "); 
-									String dtf = s.nextLine(); 
+									String scf = s.nextLine();
+									System.out.println("Please enter the Destination File: ");
+									String dtf = s.nextLine();
 									System.out.println("Please enter the Group Name: ");
 									if(fc.upload(scf, dtf, s.nextLine(), t))
 									{
@@ -276,27 +276,27 @@ public class FileClientApp
 									}
 									break;
 								case 5:
-									fc.disconnect(); 
-									System.out.println("Disconnected From File Server"); 
-									break; 
+									fc.disconnect();
+									System.out.println("Disconnected From File Server");
+									break;
 								default:
-									System.out.println("Invalid entry!"); 
-									y = 1; 
+									System.out.println("Invalid entry!");
+									y = 1;
 							}
 						}while(y > 0 && y < 5);
-						
+
 					}
 					else
 					{
 						System.out.println("Unable to connect");
 						System.exit(1);
 					}
-					break; 
+					break;
 				case 3:
-					System.out.println("Thank You for using the File Sharing System"); 
-					System.exit(1); 
+					System.out.println("Thank You for using the File Sharing System");
+					System.exit(1);
 			}
-		}while(z > 0  && z < 4); 
+		}while(z > 0  && z < 4);
 	}
 
 }

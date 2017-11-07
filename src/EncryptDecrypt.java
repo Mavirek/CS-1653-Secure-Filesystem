@@ -88,7 +88,7 @@ public class EncryptDecrypt {
 
     BigInteger g = new BigInteger("2");
     BigInteger q = new BigInteger(G, 16);
-    BigInteger newPass = g.modPow(new BigInteger(passHash), q);
+    BigInteger newPass = g.modPow(new BigInteger(passHash, 16), q);
 
     return newPass.toString();
   }

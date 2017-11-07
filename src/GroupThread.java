@@ -37,11 +37,12 @@ public class GroupThread extends Thread
 			final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 			final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
 			//gen pub priv pair
-			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
+			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
 			kpg.initialize(2048);
 			KeyPair kp = kpg.generateKeyPair();
 			PrivateKey groupPrivKey = kp.getPrivate();
 			PublicKey groupPubKey = kp.getPublic();
+			System.out.println("GS pub key : " + groupPubKey);
 			Envelope pubKey = new Envelope("GROUP PUB KEY");
 			pubKey.addObject(groupPubKey);
 			output.writeObject(pubKey);
