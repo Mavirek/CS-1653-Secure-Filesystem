@@ -19,6 +19,7 @@ public class GroupThread extends Thread
 {
 	private final Socket socket;
 	private GroupServer my_gs;
+	private EncryptDecrypt ed = new EncryptDecrypt();
 
 	public GroupThread(Socket _socket, GroupServer _gs)
 	{
@@ -28,6 +29,7 @@ public class GroupThread extends Thread
 
 	public void run()
 	{
+		Security.addProvider(new BouncyCastleProvider());
 		boolean proceed = true;
 
 		try
@@ -37,12 +39,12 @@ public class GroupThread extends Thread
 			final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 			final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
 			//gen pub priv pair
-			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
 			kpg.initialize(2048);
 			KeyPair kp = kpg.generateKeyPair();
 			PrivateKey groupPrivKey = kp.getPrivate();
 			PublicKey groupPubKey = kp.getPublic();
-			System.out.println("GS pub key : " + groupPubKey);
+			//System.out.println("GS pub key : " + groupPubKey);
 			Envelope pubKey = new Envelope("GROUP PUB KEY");
 			pubKey.addObject(groupPubKey);
 			output.writeObject(pubKey);
@@ -305,18 +307,40 @@ public class GroupThread extends Thread
 				else if(message.getMessage().equals("CHECK")) //Check Password
 				{
 					//decrypt envelope
-					String[] toDecrypt = new String[2];
-					toDecrypt[0] = (String)message.getObjContents().get(0);
-					toDecrypt[1] = (String)message.getObjContents().get(1);
-					String[] decrypted = EncryptDecrypt.rsaDecrypt(toDecrypt, groupPrivKey);
+					//String[] toDecrypt = new String[2];
+					//toDecrypt[0] = (String)message.getObjContents().get(0);
+					//toDecrypt[1] = (String)message.getObjContents().get(1);
+					//System.out.println("MAKES IT HERE!!");
+					//System.out.println("private : " + groupPrivKey);
+
+					byte[] encryptedUser = (byte[])message.getObjContents().get(0);
+					byte[] encryptedPassHash = (byte[])message.getObjContents().get(1);
+					byte[] decryptedUser;
+		      byte[] decryptedPassHash;
+
+					try {
+			      Cipher dec = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
+			  		dec.init(Cipher.DECRYPT_MODE, kp.getPrivate());
+			      decryptedUser = dec.doFinal(encryptedUser);
+			      decryptedPassHash = dec.doFinal(encryptedPassHash);
 
 
-					String userName = decrypted[0];
-					String passHash =decrypted[1];
+						System.out.println("decrypted username : " + new String(decryptedUser));
+					}
+					catch(Exception e) {
+						System.out.println(e);
+					}
+
+
+					//String[] decrypted = ed.rsaDecrypt(toDecrypt, groupPrivKey);
+
+
+					String userName = new String(decryptedUser);
+					//String passHash = decrypted[1];
 					if(my_gs.userList.checkUser(userName))
 					{
 
-						if(my_gs.userList.checkPass(userName, EncryptDecrypt.passDH(passHash)))
+						if(my_gs.userList.checkPass(userName, ed.passDH(decryptedPassHash)))
 							response = new Envelope("USER AUTHORIZED");
 						else
 						{
@@ -510,4 +534,13 @@ public class GroupThread extends Thread
 		}
 		return false;
 	}
+/**
+	private String[] decryptThis(String[] toDecrypt, KeyPair kp) {
+
+		Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
+		dec.init(Cipher.DECRYPT_MODE, kp.getPrivate());
+
+		//byte[] username = toDecrypt;
+	}
+	**/
 }

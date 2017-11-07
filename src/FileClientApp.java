@@ -4,11 +4,11 @@ import java.util.*;
 public class FileClientApp
 {
 	protected static Token userToken = null;
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException, ClassNotFoundException
 	{
-		if(args.length != 5)
+		if(args.length != 6)
 		{
-			System.err.println("Usage: java FileClientApp <Username> <Group Server Name> <File Server Name> <Group Port> <File Port>\n");
+			System.err.println("Usage: java FileClientApp <Username> <Password> <Group Server Name> <File Server Name> <Group Port> <File Port>\n");
 			System.exit(-1);
 		}
 
@@ -25,9 +25,9 @@ public class FileClientApp
 			switch(z)
 			{
 				case 1:
-					if(gc.connect(args[1],Integer.parseInt(args[3])))
+					if(gc.connect(args[2],Integer.parseInt(args[4]), args[0], args[1]))
 					{
-						System.out.println("Connected to Group Server: "+args[1]+" Port: "+args[3]);
+						System.out.println("Connected to Group Server: "+args[2]+" Port: "+args[4]);
 						int x = 0;
 						do{
 							System.out.println();
@@ -209,13 +209,13 @@ public class FileClientApp
 						System.out.println("Please Connect to Group Server and Get a Token");
 						break;
 					}
-					if(fc.connect(args[2],Integer.parseInt(args[4])))
+					if(fc.connect(args[3],Integer.parseInt(args[5])))
 					{
 
 						Token t = userToken;
 
 						Scanner s = new Scanner(System.in);
-						System.out.println("Connected to File Server: "+args[2]+" Port: "+args[4]);
+						System.out.println("Connected to File Server: "+args[3]+" Port: "+args[5]);
 						int y = 0;
 						do{
 							System.out.println();

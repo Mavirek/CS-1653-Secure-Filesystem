@@ -4,8 +4,13 @@ import javax.crypto.SecretKey;
 import javax.crypto.KeyGenerator;
 import javax.crypto.Cipher;
 import java.math.*;
+import javax.crypto.*;
 
 public class EncryptDecrypt {
+
+  public EncryptDecrypt() {
+      Security.addProvider(new BouncyCastleProvider());
+  }
 
   private static final String G = (
            "FFFFFFFF FFFFFFFF C90FDAA2 2168C234 C4C6628B 80DC1CD1" +
@@ -22,42 +27,49 @@ public class EncryptDecrypt {
            .replaceAll("\\s", "");
 
 
-  public static String hash(String msg) {
+  public static byte[] hashThis(String msg) {
 
     MessageDigest md = null;
 
     try {
-      md = MessageDigest.getInstance("SHA-256");
+      md = MessageDigest.getInstance("SHA256", "BC");
   		md.update(msg.getBytes("UTF-8"));
     }
     catch(Exception e) {
       System.out.println(e);
     }
 
-  	 return bytesToHex(md.digest());
+    //return new String(md.digest(msg.getBytes()));
+  	 return md.digest();
   }
 
-  private static String bytesToHex(byte[] in) {
+  /**private static String bytesToHex(byte[] in) {
  		final StringBuilder builder = new StringBuilder();
  		for(byte b : in) {
  			builder.append(String.format("%02x", b));
  		}
  		return builder.toString();
- 	}
-
-  public static String[] rsaEncrypt(String[] toEncrypt, Key pub) {
+ 	}**/
+/**
+  public static String[] rsaEncrypt(byte[] userBytes, byte[] passBytes, PublicKey pub) {
 
     try {
-      byte[] bytes;
 
-      Cipher enc = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
+      //System.out.println("Encrypt pubKey : " + pub);
+
+      byte[] decryptedUser;
+      byte[] decryptedPassHash;
+
+      Cipher enc = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
   		enc.init(Cipher.ENCRYPT_MODE, pub);
 
-      for(int x = 0; x < toEncrypt.length; x++) {
+    //  for(int x = 0; x < toEncrypt.length; x++) {
 
-        toEncrypt[x] = new String(enc.doFinal(toEncrypt[x].getBytes()));
+      //  toEncrypt[x] = new String (enc.doFinal(toEncrypt[x].getBytes()));
+      decryptedUser = enc.doFinal(userBytes);
+      decryptedPassHash = enc.doFinal(passBytes);
 
-      }
+    //  }
     }
     catch(Exception e) {
       System.out.println(e);
@@ -66,15 +78,20 @@ public class EncryptDecrypt {
       return toEncrypt;
   }
 
-  public static String[] rsaDecrypt(String[] toDecrypt, Key pri) {
+  public static String[] rsaDecrypt(String[] toDecrypt, PrivateKey pri) {
 
     try {
-      Cipher enc = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
-      enc.init(Cipher.DECRYPT_MODE, pri);
-
+      System.out.println("DECRYPT!!");
+      System.out.println("Username : " + toDecrypt[0]);
+      Cipher dec = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
+      dec.init(Cipher.DECRYPT_MODE, pri);
+    //  System.out.println("DECRYPT2!!!");
       for(int x = 0; x < toDecrypt.length; x++) {
 
-        toDecrypt[x] = new String(enc.doFinal(toDecrypt[x].getBytes()));
+        toDecrypt[x] = new String(dec.doFinal(toDecrypt[x].getBytes()));
+        System.out.println("HERE!!!!");
+        if(x == 0)
+          System.out.println("Decrypt username : " + toDecrypt[x]);
       }
     }
     catch(Exception e) {
@@ -83,12 +100,12 @@ public class EncryptDecrypt {
 
     return toDecrypt;
   }
+**/
+  public static String passDH(byte[] passHash) {
 
-  public static String passDH(String passHash) {
-
-    BigInteger g = new BigInteger("2");
+    BigInteger g = new BigInteger("02", 16);
     BigInteger q = new BigInteger(G, 16);
-    BigInteger newPass = g.modPow(new BigInteger(passHash, 16), q);
+    BigInteger newPass = g.modPow(new BigInteger(passHash), q);
 
     return newPass.toString();
   }

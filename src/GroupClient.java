@@ -12,37 +12,64 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.util.encoders.Hex;
 import javax.crypto.Mac;
 import java.security.*;
+import javax.crypto.*;
 
 public class GroupClient extends Client implements GroupClientInterface {
      // Get group server's public key
 	 private Envelope groupPubKey;
-	 private Key groupPK;
+	 private PublicKey groupPK;
+	 private EncryptDecrypt ed = new EncryptDecrypt();
 
- 	 public boolean connect(final String server, final int port, String username) throws IOException, ClassNotFoundException{
+ 	 public boolean connect(final String server, final int port, String username, String password) throws IOException, ClassNotFoundException{
 		if(!super.connect(server, port))
 			return false;
 		Envelope message = null, response = null;
 
 		groupPubKey = (Envelope)input.readObject();
-		groupPK = (Key)groupPubKey.getObjContents().get(0);
+		groupPK = (PublicKey)groupPubKey.getObjContents().get(0);
 
 
 
-		System.out.println("Group pub key : " + groupPK);
+		//System.out.println("Group pub key : " + groupPK);
 
 		message = new Envelope("CHECK");
 
 		//encrypt username and password use groupPK to encrypt
 		//Generate a hash of the password
 
-		String[] toEncrypt = new String[2];
-		toEncrypt[0] = username;
-		toEncrypt[1] = EncryptDecrypt.passDH(EncryptDecrypt.hash(password));
-		System.out.println("Pass to compare : " + toEncrypt[1]);
-		String[] encrypted = EncryptDecrypt.rsaEncrypt(toEncrypt, groupPK);
+		//String[] toEncrypt = new String[2];
+		//toEncrypt[0] = username;
+		byte[] userBytes = username.getBytes();
+		//toEncrypt[1] = ed.hash(password);
+		byte[] passHashBytes = ed.hashThis(password);
+		//System.out.println("Pass to compare : " + toEncrypt[1]);
+		//String[] encrypted = ed.rsaEncrypt(toEncrypt, groupPK);
 
-		message.addObject(encrypted[0]);
-		message.addObject(encrypted[1]);
+
+
+		byte[] encryptedUser = null;
+		byte[] encryptedPassHash = null;
+
+		try {
+			Cipher enc = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
+			enc.init(Cipher.ENCRYPT_MODE, groupPK);
+			encryptedUser = enc.doFinal(userBytes);
+			encryptedPassHash = enc.doFinal(passHashBytes);
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+
+
+
+
+//		System.out.println("GC to ENcrypt username : " + toEncrypt[0]);
+		//System.out.println(toEncrypt[1]);
+
+		//System.out.println("GC pubKey : " + groupPK);
+
+		message.addObject(encryptedUser);  //Enc username
+		message.addObject(encryptedPassHash);  //Enc password hash
 		output.writeObject(message);
 		response = (Envelope)input.readObject();
 		if(response.getMessage().equals("USER AUTHORIZED"))

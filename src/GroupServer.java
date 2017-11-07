@@ -21,6 +21,7 @@ public class GroupServer extends Server {
 	public static final int SERVER_PORT = 8765;
 	public UserList userList;
 	public Hashtable<String, Group> gList = new Hashtable<String, Group>();
+	private EncryptDecrypt ed = new EncryptDecrypt();
 
 
 	public GroupServer() {
@@ -39,9 +40,9 @@ public class GroupServer extends Server {
 		Scanner console = new Scanner(System.in);
 		ObjectInputStream userStream;
 		ObjectInputStream groupStream;
-		String username="";
+		String username = "";
 		String password = "";
-		String hashPass;
+		byte[] hashPass;
 		String storePass;
 
 		//This runs a thread that saves the lists on program exit
@@ -63,10 +64,10 @@ public class GroupServer extends Server {
 			username = console.next();
 			System.out.print("Enter your password: ");
  			password = console.next();
-			hashPass = EncryptDecrypt.hash(password);
-			storePass = EncryptDecrypt.passDH(hashPass);
+			hashPass = ed.hashThis(password);
+			storePass = ed.passDH(hashPass);
 
-			System.out.println("Pass to store : " + storePass);
+			//System.out.println("Pass to store : " + storePass);
 
  			//BigInteger g = new BigInteger((long)2);
  			//BigInteger q = new BigInteger(G, 16);
