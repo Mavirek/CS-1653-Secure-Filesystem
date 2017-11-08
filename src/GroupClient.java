@@ -119,7 +119,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	 }
 
-	 public boolean createUser(String username, UserToken token)
+	 public boolean createUser(String username, String password, UserToken token)
 	 {
 		 try
 			{
@@ -127,6 +127,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				//Tell the server to create a user
 				message = new Envelope("CUSER");
 				message.addObject(username); //Add user name string
+				message.addObject(password);
 				message.addObject(token); //Add the requester's token
 				output.writeObject(message);
 

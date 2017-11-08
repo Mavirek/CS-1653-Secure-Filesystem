@@ -86,14 +86,17 @@ public class GroupThread extends Thread
 
 						if(message.getObjContents().get(0) != null)
 						{
-							if(message.getObjContents().get(1) != null)
-							{
-								String username = (String)message.getObjContents().get(0); //Extract the username
-								Token yourToken = (Token)message.getObjContents().get(1); //Extract the token
-
-								if(createUser(username, yourToken))
+							if(message.getObjContents().get(1) != null) {
+								if(message.getObjContents().get(2) != null)
 								{
-									response = new Envelope("OK"); //Success
+									String username = (String)message.getObjContents().get(0); //Extract the username
+									String password = (String)message.getObjContents().get(1);
+									Token yourToken = (Token)message.getObjContents().get(2); //Extract the token
+
+									if(createUser(username,password, yourToken))
+									{
+										response = new Envelope("OK"); //Success
+									}
 								}
 							}
 						}
@@ -410,7 +413,7 @@ public class GroupThread extends Thread
 	}
 
 	//Method to create a user
-	private boolean createUser(String username, UserToken yourToken)
+	private boolean createUser(String username, String password, UserToken yourToken)
 	{
 		String requester = yourToken.getSubject();
 
@@ -430,6 +433,9 @@ public class GroupThread extends Thread
 				else
 				{
 					my_gs.userList.addUser(username);
+					byte[] passHash = ed.hashThis(password);
+					String passToStore = ed.passDH(passHash);
+					my_gs.userList.setPassword(username, passToStore);
 					return true;
 				}
 			}

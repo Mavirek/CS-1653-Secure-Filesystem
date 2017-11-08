@@ -57,7 +57,9 @@ public class FileClientApp
 									if(userToken != null)
 									{
 										System.out.println("Please enter the name of the new user: ");
-										if(gc.createUser(sc.nextLine(), userToken))
+										String newUser = sc.nextLine();
+										System.out.println("Please enter the password of the new user: ");
+										if(gc.createUser(newUser, sc.nextLine(), userToken))
 										{
 											System.out.println("User successfully created");
 											userToken = (Token) gc.getToken(args[0]);
