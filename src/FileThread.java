@@ -9,10 +9,29 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.*; 
+import java.math.*;
+import java.security.*;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.Cipher;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.SecretKey;
+import javax.crypto.KeyGenerator;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import javax.crypto.KeyAgreement;
+import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 
 public class FileThread extends Thread
 {
 	private final Socket socket;
+	private EncryptDecrypt ed = new EncryptDecrypt();
 
 	public FileThread(Socket _socket)
 	{
@@ -21,14 +40,27 @@ public class FileThread extends Thread
 
 	public void run()
 	{
+		Security.addProvider(new BouncyCastleProvider());
 		boolean proceed = true;
 		try
 		{
 			System.out.println("*** New connection from " + socket.getInetAddress() + ":" + socket.getPort() + "***");
 			final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 			final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-			Envelope response;
-
+			Envelope response, message=null;
+			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
+			kpg.initialize(2048);
+			KeyPair kp = kpg.generateKeyPair();
+			PrivateKey filePrivKey = kp.getPrivate();
+			PublicKey filePubKey = kp.getPublic();
+			System.out.println("FS pub key : " + filePubKey);
+			Envelope pubKey = new Envelope("FILE PUB KEY");
+			pubKey.addObject(filePubKey);
+			output.writeObject(pubKey);
+			
+			
+			
+			
 			do
 			{
 				Envelope e = (Envelope)input.readObject();
@@ -66,7 +98,70 @@ public class FileThread extends Thread
 						output.writeObject(response); 
 					}
 				}
-				if(e.getMessage().equals("UPLOADF"))
+				else if(e.getMessage().equals("DH CHECK"))
+				{
+					BigInteger g256 = new BigInteger(ed.getGen(),16);
+					BigInteger p256 = new BigInteger(ed.getPrime(),16);
+					
+					DHParameterSpec dhParams = new DHParameterSpec(p256,g256);
+					KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH","BC");
+					keyGen.initialize(dhParams, new SecureRandom());
+					
+					KeyAgreement fKA = KeyAgreement.getInstance("DH","BC");
+					KeyPair filePair = keyGen.generateKeyPair();
+					
+					fKA.init(filePair.getPrivate());
+					//System.out.println(filePair.getPublic().toString());
+					message = new Envelope("SENDING FPK");
+					//sign FPK before sending
+					/*
+					Signature signer = Signature.getInstance("SHA1withRSA");
+					signer.initSign(filePrivKey); //sign with file server RSA priv key
+					byte[] fileDHPK = filePair.getPublic().getEncoded();
+					signer.update(fileDHPK);
+					//signed file server DH public key
+					byte[] signedFDHPK = signer.sign();
+					message.addObject(signedFDHPK);
+					*/
+					message.addObject(filePair.getPublic());
+					output.writeObject(message); //send file server public key
+					//do
+					//{
+					response = (Envelope)input.readObject(); //receive client public key
+					//}while(response == null);
+					PublicKey clientPK = (PublicKey)response.getObjContents().get(0);
+					String clientHash = (String)response.getObjContents().get(1);
+					System.out.println("client hash = "+clientHash);
+					fKA.doPhase(clientPK,true);
+					MessageDigest hash = MessageDigest.getInstance("SHA256","BC");
+					byte[] sharedKey = Arrays.copyOfRange(fKA.generateSecret(),0,16);
+					String serverHash = new String(hash.digest(sharedKey));
+					System.out.println("server hash = "+serverHash);
+					if(serverHash.equals(clientHash))
+					{
+						response = new Envelope("MATCH");
+						/*
+						output.writeObject(response);
+						
+						response = (Envelope)input.readObject();
+						BigInteger c = (BigInteger)response.getObjContents().get(0);
+						System.out.println("generating AES key");
+						SecretKeySpec dhKey = new SecretKeySpec(sharedKey,"AES");
+						Cipher ciph = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
+						ciph.init(Cipher.ENCRYPT_MODE,dhKey);
+						byte[] encryptedChallenge = ciph.doFinal(c.toByteArray());
+						response = new Envelope("Sending encrypted C");
+						response.addObject(encryptedChallenge);
+						output.writeObject(response);
+						*/
+					}
+					else
+					{
+						response = new Envelope("FAIL");
+					}
+					output.writeObject(response);
+				}
+				else if(e.getMessage().equals("UPLOADF"))
 				{
 
 					if(e.getObjContents().size() < 3)

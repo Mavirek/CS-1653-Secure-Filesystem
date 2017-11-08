@@ -1,13 +1,149 @@
 /* FileClient provides all the client functionality regarding the file server */
-
+import java.util.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.macs.HMac;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.util.encoders.Hex;
+import javax.crypto.Mac;
+import java.security.*;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import javax.crypto.KeyAgreement;
+import javax.crypto.spec.DHParameterSpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.security.PublicKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.Cipher;
+
 
 public class FileClient extends Client implements FileClientInterface {
+	private Envelope filePubKey;
+	private PublicKey filePK; //DH public key
+	private String fingerprint;
+	private EncryptDecrypt ed = new EncryptDecrypt();
+	public boolean connect(final String server, final int port, String username, String password) throws IOException, ClassNotFoundException{
+		if(!super.connect(server, port))
+			return false;
+		Envelope message = null, response = null;
 
+		message = new Envelope("DH CHECK");
+		output.writeObject(message);
+		
+		try{
+			//receive file server pub key, then decrypt signature from fiel server
+			response = (Envelope)input.readObject();
+			//file server RSA public key
+			PublicKey fileRSAPK = (PublicKey)response.getObjContents().get(0);
+			Scanner s = new Scanner(System.in);
+			//receive file server DH public key
+			filePubKey = (Envelope)input.readObject();
+			filePK=(PublicKey)filePubKey.getObjContents().get(0);
+			/*
+			//decrypt signature
+			byte[] fileDHPKsignature = (byte[])filePubKey.getObjContents().get(0);
+				
+			byte[] fileDHPK = new byte[2048];//dec.doFinal(fileDHPKsignature);
+			
+			Signature signer = Signature.getInstance("SHA256withRSA");
+			signer.initVerify(fileRSAPK);
+			signer.update(fileDHPK);
+		
+			filePK = KeyFactory.getInstance("DiffieHellman","BC").generatePublic(new X509EncodedKeySpec(fileDHPK));
+			*/
+			if(filePK!=null)
+				System.out.println("filePK not null");
+			else
+				System.out.println("filePK is null");
+			MessageDigest digest = MessageDigest.getInstance("SHA256");
+			digest.reset();
+			digest.update(filePK.toString().getBytes());
+			fingerprint = ed.bytesToHex(digest.digest());
+			System.out.println("File server fingerprint: "+fingerprint);
+			System.out.println("Accept? [y]es or [n]o");
+			char accept = s.next().charAt(0);
+			if(accept=='n' || accept=='N')
+			{
+				System.out.println("Aborting file server connection...");
+				return false;
+			}
+			
+			//Diffie Hellman
+			
+			BigInteger g256 = new BigInteger(ed.getGen(),16);
+			BigInteger p256 = new BigInteger(ed.getPrime(),16);
+			
+			DHParameterSpec dhParams = new DHParameterSpec(p256,g256);
+			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH","BC");
+			keyGen.initialize(dhParams, new SecureRandom());
+			
+			KeyAgreement clientKA = KeyAgreement.getInstance("DH","BC");
+			KeyPair clientPair = keyGen.generateKeyPair();
+			System.out.println("generated keypair");
+			clientKA.init(clientPair.getPrivate());
+			
+			clientKA.doPhase(filePK,true);
+			System.out.println("finished doPhase with filePK");
+			MessageDigest hash = MessageDigest.getInstance("SHA256","BC");
+			byte[] sharedKey = Arrays.copyOfRange(clientKA.generateSecret(),0,16);
+			String clientHash = new String(hash.digest(sharedKey));
+			message = new Envelope("SENT CLIENT PK AND HASH");
+			message.addObject(clientPair.getPublic());
+			message.addObject(clientHash);
+			output.writeObject(message);
+			System.out.println("sent client PK and hash");
+			
+			//check if symmetric keys match
+			
+			//if yes, return true
+			//otherwise return false
+			response = (Envelope)input.readObject();
+			//System.out.println("after response");
+			if(response.getMessage().equals("MATCH"))
+			{
+				//System.out.print("entered if");
+				/*
+				BigInteger challenge = new BigInteger(32,new SecureRandom());
+				System.out.println("challenge = "+challenge.toString());
+				message = new Envelope("Sending Challenge");
+				message.addObject(challenge);
+				output.writeObject(message);
+				response = (Envelope)input.readObject();
+				byte[] c2 = (byte[])response.getObjContents().get(0);
+				SecretKeySpec dhKey = new SecretKeySpec(sharedKey,"AES");
+				Cipher ciph = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
+				ciph.init(Cipher.DECRYPT_MODE,dhKey);
+				byte[] decryptedChallenge = ciph.doFinal(c2);
+				
+				BigInteger chal2 = new BigInteger(c2);
+				System.out.println("chal2 = "+chal2.toString());
+				if(challenge.compareTo(chal2)==0)
+					return true;
+			
+				return false;
+				*/
+				return true;
+			}
+			return false;
+			
+			
+		
+		}
+		catch(Exception e)
+		{
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
 	public boolean delete(String filename, UserToken token) {
 		String remotePath;
 		if (filename.charAt(0)=='/') {
