@@ -10,10 +10,10 @@ import java.security.*;
 public class Token implements UserToken, java.io.Serializable{
 
 	private String issuer;
-	private String subject;
-	private ArrayList<String> groups = new ArrayList<String>();
-	private boolean isAdmin;
-	private String hash;
+	private String subject; 
+	private ArrayList<String> groups = new ArrayList<String>(); 
+	private boolean isAdmin; 
+	private String hash; 
 	private String signedHash;
 	public Token()
 	{
@@ -28,6 +28,15 @@ public class Token implements UserToken, java.io.Serializable{
 		issuer = attributes[1];
 		for(int i = 2; i < attributes.length; i++)
 			groups.add(attributes[i]);
+	}
+	//subject:issuer:group1:group2:...:
+	public Token(String tk)
+	{
+		String[] attributes = tk.split(":"); 
+		subject = attributes[0]; 
+		issuer = attributes[1]; 
+		for(int i = 2; i < attributes.length; i++)
+			groups.add(attributes[i]); 
 	}
 	public Token(ArrayList<String> g)
 	{
@@ -66,29 +75,30 @@ public class Token implements UserToken, java.io.Serializable{
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append(subject);
-		builder.append(":");
+
+		builder.append(subject); 
+		builder.append(":"); 
 		builder.append(issuer);
-		builder.append(":");
-		String[] groupsArr = groups.toArray(new String[groups.size()]);
-		Arrays.sort(groupsArr);
+		builder.append(":"); 
+		String[] groupsArr = groups.toArray(new String[groups.size()]); 
+		Arrays.sort(groupsArr); 
 		for(int i = 0; i < groupsArr.length; i++)
 		{
-			builder.append(groupsArr[i] + ":");
+			builder.append(groupsArr[i] + ":"); 
 		}
-		return builder.toString();
+		return builder.toString(); 
 	}
 	public void setHash(String newHash)
 	{
-		hash = newHash;
+		hash = newHash; 
 	}
 /*	public String getHash()
 	{
-		return hash;
+		return hash; 
 	}*/
-	public void signHash(Key pk)
+	public void signHash(PrivateKey pk)
 	{
-		//signedHash = [hash]pk;
+		//signedHash = [hash]pk; 
 	}
 	public String getSignedHash()
 	{
