@@ -21,6 +21,9 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.security.PublicKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.Cipher;
+
 
 public class FileClient extends Client implements FileClientInterface {
 	private Envelope filePubKey;
@@ -90,21 +93,49 @@ public class FileClient extends Client implements FileClientInterface {
 			clientKA.doPhase(filePK,true);
 			System.out.println("finished doPhase with filePK");
 			MessageDigest hash = MessageDigest.getInstance("SHA256","BC");
-			String clientHash = new String(hash.digest(clientKA.generateSecret()));
+			byte[] sharedKey = Arrays.copyOfRange(clientKA.generateSecret(),0,16);
+			String clientHash = new String(hash.digest(sharedKey));
 			message = new Envelope("SENT CLIENT PK AND HASH");
 			message.addObject(clientPair.getPublic());
 			message.addObject(clientHash);
 			output.writeObject(message);
 			System.out.println("sent client PK and hash");
 			
-			response = (Envelope)input.readObject();
-			if(response.getMessage().equals("MATCH"))
-				return true;
-			return false;
 			//check if symmetric keys match
 			
 			//if yes, return true
 			//otherwise return false
+			response = (Envelope)input.readObject();
+			//System.out.println("after response");
+			if(response.getMessage().equals("MATCH"))
+			{
+				//System.out.print("entered if");
+				/*
+				BigInteger challenge = new BigInteger(32,new SecureRandom());
+				System.out.println("challenge = "+challenge.toString());
+				message = new Envelope("Sending Challenge");
+				message.addObject(challenge);
+				output.writeObject(message);
+				response = (Envelope)input.readObject();
+				byte[] c2 = (byte[])response.getObjContents().get(0);
+				SecretKeySpec dhKey = new SecretKeySpec(sharedKey,"AES");
+				Cipher ciph = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
+				ciph.init(Cipher.DECRYPT_MODE,dhKey);
+				byte[] decryptedChallenge = ciph.doFinal(c2);
+				
+				BigInteger chal2 = new BigInteger(c2);
+				System.out.println("chal2 = "+chal2.toString());
+				if(challenge.compareTo(chal2)==0)
+					return true;
+			
+				return false;
+				*/
+				return true;
+			}
+			return false;
+			
+			
+		
 		}
 		catch(Exception e)
 		{

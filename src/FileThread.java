@@ -25,6 +25,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 
 public class FileThread extends Thread
@@ -133,11 +134,26 @@ public class FileThread extends Thread
 					System.out.println("client hash = "+clientHash);
 					fKA.doPhase(clientPK,true);
 					MessageDigest hash = MessageDigest.getInstance("SHA256","BC");
-					String serverHash = new String(hash.digest(fKA.generateSecret()));
+					byte[] sharedKey = Arrays.copyOfRange(fKA.generateSecret(),0,16);
+					String serverHash = new String(hash.digest(sharedKey));
 					System.out.println("server hash = "+serverHash);
 					if(serverHash.equals(clientHash))
 					{
 						response = new Envelope("MATCH");
+						/*
+						output.writeObject(response);
+						
+						response = (Envelope)input.readObject();
+						BigInteger c = (BigInteger)response.getObjContents().get(0);
+						System.out.println("generating AES key");
+						SecretKeySpec dhKey = new SecretKeySpec(sharedKey,"AES");
+						Cipher ciph = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
+						ciph.init(Cipher.ENCRYPT_MODE,dhKey);
+						byte[] encryptedChallenge = ciph.doFinal(c.toByteArray());
+						response = new Envelope("Sending encrypted C");
+						response.addObject(encryptedChallenge);
+						output.writeObject(response);
+						*/
 					}
 					else
 					{
