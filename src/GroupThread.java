@@ -315,8 +315,8 @@ public class GroupThread extends Thread
 
 					byte[] encryptedUser = (byte[])message.getObjContents().get(0);
 					byte[] encryptedPassHash = (byte[])message.getObjContents().get(1);
-					byte[] decryptedUser;
-		      byte[] decryptedPassHash;
+					byte[] decryptedUser=null;
+					byte[] decryptedPassHash=null;
 
 					try {
 			      Cipher dec = Cipher.getInstance("RSA/ECB/NoPadding", "BC");

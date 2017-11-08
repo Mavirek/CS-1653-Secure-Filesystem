@@ -12,7 +12,7 @@ public class EncryptDecrypt {
       Security.addProvider(new BouncyCastleProvider());
   }
 
-  private static final String G = (
+  private static final String p = (
            "FFFFFFFF FFFFFFFF C90FDAA2 2168C234 C4C6628B 80DC1CD1" +
            "29024E08 8A67CC74 020BBEA6 3B139B22 514A0879 8E3404DD" +
            "EF9519B3 CD3A431B 302B0A6D F25F1437 4FE1356D 6D51C245" +
@@ -43,13 +43,13 @@ public class EncryptDecrypt {
   	 return md.digest();
   }
 
-  /**private static String bytesToHex(byte[] in) {
+  public static String bytesToHex(byte[] in) {
  		final StringBuilder builder = new StringBuilder();
  		for(byte b : in) {
  			builder.append(String.format("%02x", b));
  		}
  		return builder.toString();
- 	}**/
+ 	}
 /**
   public static String[] rsaEncrypt(byte[] userBytes, byte[] passBytes, PublicKey pub) {
 
@@ -101,10 +101,21 @@ public class EncryptDecrypt {
     return toDecrypt;
   }
 **/
+
+  public static String getPrime()
+  {
+	  return p;
+  }
+  
+  public static String getGen()
+  {
+	  return "02";
+  }
+  
   public static String passDH(byte[] passHash) {
 
     BigInteger g = new BigInteger("02", 16);
-    BigInteger q = new BigInteger(G, 16);
+    BigInteger q = new BigInteger(p, 16);
     BigInteger newPass = g.modPow(new BigInteger(passHash), q);
 
     return newPass.toString();
