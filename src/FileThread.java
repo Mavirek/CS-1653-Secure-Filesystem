@@ -98,6 +98,23 @@ public class FileThread extends Thread
 						output.writeObject(response); 
 					}
 				}
+				else if(e.getMessage().equals("Verify Sign"))
+				{
+					//Verify the signed hash in token with the received public key. 
+					Token t = (Token)e.getObjContents().get(0); 
+					PublicKey groupPubKey = (PublicKey)e.getObjContents().get(1); 
+					System.out.println("Group Server's PublicKey in FileServer: " + groupPubKey.toString()); 
+					System.out.println("Verifying Signature..."); 
+					Signature signed = Signature.getInstance("SHA1WithRSA", "BC");
+					signed.initVerify(groupPubKey);
+					System.out.println("Hash in Token in File Server: " + new String(t.getHash())); 
+					signed.update(t.getHash()); 
+					if(signed.verify(t.getSignedHash()))
+						response = new Envelope("APPROVED"); 
+					else 
+						response = new Envelope("NOT APPROVED"); 
+					output.writeObject(response); 
+				}
 				else if(e.getMessage().equals("DH CHECK"))
 				{
 					BigInteger g256 = new BigInteger(ed.getGen(),16);
@@ -114,7 +131,7 @@ public class FileThread extends Thread
 					//System.out.println(filePair.getPublic().toString());
 					message = new Envelope("SENDING FPK");
 					//sign FPK before sending
-					/*
+					/* NEED A BYTE ARRAY THAT'S THE SIZE OF THE MESSAGE BEING SIGNED
 					Signature signer = Signature.getInstance("SHA1withRSA");
 					signer.initSign(filePrivKey); //sign with file server RSA priv key
 					byte[] fileDHPK = filePair.getPublic().getEncoded();
@@ -140,7 +157,8 @@ public class FileThread extends Thread
 					if(serverHash.equals(clientHash))
 					{
 						response = new Envelope("MATCH");
-						/*
+						/* Encrypted challenge isn't giving the same decrypted value because of the IVs being different. 
+						POSSIBLE SOLUTION SEND CIPHER OBJECT. 
 						output.writeObject(response);
 						
 						response = (Envelope)input.readObject();

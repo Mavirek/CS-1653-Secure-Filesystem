@@ -62,6 +62,11 @@ public class GroupServer extends Server {
 			System.out.println("No users currently exist. Your account will be the administrator.");
 			System.out.print("Enter your username: ");
 			username = console.next();
+			while(username.contains(":"))
+			{
+				System.out.println("Please enter a username that does not contain the ':' char: "); 
+				username = console.next(); 
+			}
 			System.out.print("Enter your password: ");
  			password = console.next();
 			hashPass = ed.hashThis(password);

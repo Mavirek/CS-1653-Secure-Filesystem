@@ -66,10 +66,20 @@ public class GroupThread extends Thread
 					}
 					else
 					{
-						UserToken yourToken = createToken(username); //Create a token
+						Token yourToken = createToken(username); //Create a token
 
 						//Respond to the client. On error, the client will receive a null token
 						response = new Envelope("OK");
+						
+						//Generate a Signature 
+						System.out.println("Group Server Signing Token..."); 
+						byte[] hash = yourToken.genHash(); 
+						Signature signer = Signature.getInstance("SHA1withRSA", "BC"); 
+						signer.initSign(groupPrivKey);
+						signer.update(hash); 
+						System.out.println("Hash in Token in File Server: " + new String(hash)); 
+						yourToken.setSignedHash(signer.sign()); 
+						
 						response.addObject(yourToken);
 						output.writeObject(response);
 					}
@@ -96,6 +106,7 @@ public class GroupThread extends Thread
 									if(createUser(username,password, yourToken))
 									{
 										response = new Envelope("OK"); //Success
+										updateUserList();
 									}
 								}
 							}
@@ -125,6 +136,7 @@ public class GroupThread extends Thread
 								if(deleteUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									updateUserList();
 								}
 							}
 						}
@@ -153,6 +165,7 @@ public class GroupThread extends Thread
 								if(cGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									updateUserList();
 								}
 							}
 						}
@@ -180,6 +193,7 @@ public class GroupThread extends Thread
 								if(deleteGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									updateUserList();
 								}
 							}
 						}
@@ -210,6 +224,7 @@ public class GroupThread extends Thread
 									{
 										response = new Envelope("OK"); //Success
 										response.addObject(g.getUsers());
+										updateUserList();
 									}
 								}
 							}
@@ -251,6 +266,7 @@ public class GroupThread extends Thread
 												my_gs.gList.get(group).addUser(userToBeAdded);
 												my_gs.userList.addGroup(userToBeAdded, group);
 												response = new Envelope("OK"); //Success
+												updateUserList();
 											}
 										}
 									}
@@ -292,6 +308,7 @@ public class GroupThread extends Thread
 												my_gs.gList.get(group).removeUser(userToBeRemoved);
 												my_gs.userList.removeGroup(userToBeRemoved, group);
 												response = new Envelope("OK"); //Success
+												updateUserList();
 											}
 										}
 									}
@@ -397,13 +414,13 @@ public class GroupThread extends Thread
 	}
 
 	//Method to create tokens
-	private UserToken createToken(String username)
+	private Token createToken(String username)
 	{
 		//Check that user exists
 		if(my_gs.userList.checkUser(username))
 		{
 			//Issue a new token with server's name, user's name, and user's groups
-			UserToken yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username));
+			Token yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username));
 			return yourToken;
 		}
 		else

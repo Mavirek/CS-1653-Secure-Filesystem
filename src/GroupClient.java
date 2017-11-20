@@ -326,4 +326,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 				return false;
 			}
 	 }
+	 public PublicKey getGroupPubKey()
+	 {
+		 return groupPK; 
+	 }
 }
