@@ -74,13 +74,15 @@ public class GroupThread extends Thread
 						//Generate a Signature 
 						System.out.println("Group Server Signing Token..."); 
 						byte[] hash = yourToken.genHash(); 
+						//signedHash = [hash]pk; 
 						Signature signer = Signature.getInstance("SHA1withRSA", "BC"); 
 						signer.initSign(groupPrivKey);
 						signer.update(hash); 
 						System.out.println("Hash in Token in File Server: " + new String(hash)); 
 						yourToken.setSignedHash(signer.sign()); 
-						
-						response.addObject(yourToken);
+						response.addObject(yourToken.toString());
+						response.addObject(yourToken.getSignedHash()); 
+						response.addObject(hash); 
 						output.writeObject(response);
 					}
 				}
@@ -106,7 +108,6 @@ public class GroupThread extends Thread
 									if(createUser(username,password, yourToken))
 									{
 										response = new Envelope("OK"); //Success
-										updateUserList();
 									}
 								}
 							}
@@ -136,7 +137,6 @@ public class GroupThread extends Thread
 								if(deleteUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									updateUserList();
 								}
 							}
 						}
@@ -165,7 +165,6 @@ public class GroupThread extends Thread
 								if(cGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									updateUserList();
 								}
 							}
 						}
@@ -193,7 +192,6 @@ public class GroupThread extends Thread
 								if(deleteGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
-									updateUserList();
 								}
 							}
 						}
@@ -224,7 +222,6 @@ public class GroupThread extends Thread
 									{
 										response = new Envelope("OK"); //Success
 										response.addObject(g.getUsers());
-										updateUserList();
 									}
 								}
 							}
@@ -266,7 +263,6 @@ public class GroupThread extends Thread
 												my_gs.gList.get(group).addUser(userToBeAdded);
 												my_gs.userList.addGroup(userToBeAdded, group);
 												response = new Envelope("OK"); //Success
-												updateUserList();
 											}
 										}
 									}
@@ -308,7 +304,6 @@ public class GroupThread extends Thread
 												my_gs.gList.get(group).removeUser(userToBeRemoved);
 												my_gs.userList.removeGroup(userToBeRemoved, group);
 												response = new Envelope("OK"); //Success
-												updateUserList();
 											}
 										}
 									}
@@ -386,6 +381,7 @@ public class GroupThread extends Thread
 					response = new Envelope("FAIL"); //Server does not understand client request
 					output.writeObject(response);
 				}
+				updateUserList();
 			}while(proceed);
 		}
 		catch(Exception e)

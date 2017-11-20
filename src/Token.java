@@ -22,13 +22,20 @@ public class Token implements UserToken, java.io.Serializable{
 		subject = "ADMIN OF ADMIN";
 	}
 	//subject:issuer:group1:group2:...:
-	public Token(String tk)
+	public Token(String tk, byte[] sHash, byte[] hsh)
 	{
 		String[] attributes = tk.split(":");
 		subject = attributes[0];
 		issuer = attributes[1];
 		for(int i = 2; i < attributes.length; i++)
 			groups.add(attributes[i]);
+		signedHash = sHash; 
+		hash = hsh; 
+		if(signedHash.equals(null))
+			signed = false; 
+		else 
+			signed = true; 
+		
 	}
 	public Token(ArrayList<String> g)
 	{

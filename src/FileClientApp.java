@@ -108,7 +108,7 @@ public class FileClientApp
 										String groupName = sc.nextLine();
 										while(groupName.contains(":"))
 										{
-											System.out.println("Please enter a username that does not contain the ':' char: "); 
+											System.out.println("Please enter a group name that does not contain the ':' char: "); 
 											groupName = sc.nextLine(); 
 										}
 										if(gc.createGroup(groupName, userToken))
@@ -236,9 +236,7 @@ public class FileClientApp
 					}
 					if(fc.connect(args[3],Integer.parseInt(args[5]),args[0],args[1]))
 					{
-
-						Token t = userToken;
-
+						Token t = userToken;  
 						Scanner s = new Scanner(System.in);
 						System.out.println("Connected to File Server: "+args[3]+" Port: "+args[5]);
 						int y = 0;

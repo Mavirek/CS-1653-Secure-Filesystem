@@ -23,15 +23,15 @@ public class GroupServer extends Server {
 	public Hashtable<String, Group> gList = new Hashtable<String, Group>();
 	private EncryptDecrypt ed = new EncryptDecrypt();
 
-
+	
 	public GroupServer() {
 		super(SERVER_PORT, "ALPHA");
 	}
-
+	
 	public GroupServer(int _port) {
 		super(_port, "ALPHA");
 	}
-
+	@SuppressWarnings("unchecked")
 	public void start() {
 		// Overwrote server.start() because if no user file exists, initial admin account needs to be created
 
