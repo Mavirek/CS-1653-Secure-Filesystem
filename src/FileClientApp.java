@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
-
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import java.security.*; 
 public class FileClientApp
 {
 	protected static Token userToken = null;
@@ -11,7 +12,7 @@ public class FileClientApp
 			System.err.println("Usage: java FileClientApp <Username> <Password> <Group Server Name> <File Server Name> <Group Port> <File Port>\n");
 			System.exit(-1);
 		}
-
+		PublicKey groupPubKey = null; 
 		FileClient fc = new FileClient();
 		GroupClient gc = new GroupClient();
 		Scanner sc = new Scanner(System.in);
@@ -28,6 +29,8 @@ public class FileClientApp
 					if(gc.connect(args[2],Integer.parseInt(args[4]), args[0], args[1]))
 					{
 						System.out.println("Connected to Group Server: "+args[2]+" Port: "+args[4]);
+						//Get the groups public key to use for file server signature verification 
+						groupPubKey = gc.getGroupPubKey(); 
 						int x = 0;
 						do{
 							System.out.println();
@@ -46,6 +49,7 @@ public class FileClientApp
 							switch(x)
 							{
 								case 1:
+								//Get Token 
 									userToken = (Token) gc.getToken(args[0]);
 									if(userToken==null)
 									{
@@ -54,10 +58,16 @@ public class FileClientApp
 									}
 									break;
 								case 2:
+								//Create User
 									if(userToken != null)
 									{
 										System.out.println("Please enter the name of the new user: ");
 										String newUser = sc.nextLine();
+										while(newUser.contains(":"))
+										{
+											System.out.println("Please enter a username that does not contain the ':' char: "); 
+											newUser = sc.nextLine(); 
+										}
 										System.out.println("Please enter the password of the new user: ");
 										if(gc.createUser(newUser, sc.nextLine(), userToken))
 										{
@@ -73,6 +83,7 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 3:
+								//Delete User
 									if(userToken != null)
 									{
 										System.out.println("Please enter the name of the user: ");
@@ -90,10 +101,17 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 4:
+								//Create Group
 									if(userToken != null)
 									{
 										System.out.println("Group Name:");
-										if(gc.createGroup(sc.nextLine(), userToken))
+										String groupName = sc.nextLine();
+										while(groupName.contains(":"))
+										{
+											System.out.println("Please enter a group name that does not contain the ':' char: "); 
+											groupName = sc.nextLine(); 
+										}
+										if(gc.createGroup(groupName, userToken))
 										{
 											System.out.println("Group successfully created");
 											userToken = (Token) gc.getToken(args[0]);
@@ -107,6 +125,7 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 5:
+								//Delete Group 
 									if(userToken != null)
 									{
 										System.out.println("Group Name:");
@@ -124,6 +143,7 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 6:
+								//List Members
 									if(userToken != null)
 									{
 										System.out.println("Group Name:");
@@ -148,6 +168,7 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 7:
+								//Add User to Group 
 									if(userToken != null)
 									{
 										System.out.println("Group Name:");
@@ -168,6 +189,7 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 8:
+								//Delete User from Group 
 									if(userToken != null)
 									{
 										System.out.println("Group Name:");
@@ -187,6 +209,7 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 9:
+								//Disconnect 
 									userToken = (Token) gc.getToken(args[0]);
 									gc.disconnect();
 									System.out.println("Disconnected From Group Server");
@@ -213,9 +236,7 @@ public class FileClientApp
 					}
 					if(fc.connect(args[3],Integer.parseInt(args[5]),args[0],args[1]))
 					{
-
-						Token t = userToken;
-
+						Token t = userToken;  
 						Scanner s = new Scanner(System.in);
 						System.out.println("Connected to File Server: "+args[3]+" Port: "+args[5]);
 						int y = 0;
@@ -233,7 +254,7 @@ public class FileClientApp
 							{
 								case 1:
 									System.out.println("Please enter a file name: ");
-									if(fc.delete(s.nextLine(), t))
+									if(fc.delete(s.nextLine(), t, groupPubKey))
 									{
 										System.out.println("File successfully deleted");
 									}
@@ -247,7 +268,7 @@ public class FileClientApp
 									String sf = s.nextLine();
 									System.out.println("Please enter the Destination File: ");
 									String df = s.nextLine();
-									if(fc.download(sf, df, t))
+									if(fc.download(sf, df, t, groupPubKey))
 									{
 										System.out.println("File successfully downloaded");
 									}
@@ -257,7 +278,7 @@ public class FileClientApp
 									}
 									break;
 								case 3:
-									List<String> flist = fc.listFiles(t);
+									List<String> flist = fc.listFiles(t, groupPubKey);
 									for(String c : flist)
 										System.out.println(c);
 
@@ -268,7 +289,7 @@ public class FileClientApp
 									System.out.println("Please enter the Destination File: ");
 									String dtf = s.nextLine();
 									System.out.println("Please enter the Group Name: ");
-									if(fc.upload(scf, dtf, s.nextLine(), t))
+									if(fc.upload(scf, dtf, s.nextLine(), t, groupPubKey))
 									{
 										System.out.println("File successfully uploaded");
 									}

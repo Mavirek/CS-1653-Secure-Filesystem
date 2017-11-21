@@ -100,9 +100,12 @@ public class GroupClient extends Client implements GroupClientInterface {
 				ArrayList<Object> temp = null;
 				temp = response.getObjContents();
 
-				if(temp.size() == 1)
+				if(temp.size() == 3)
 				{
-					token = (UserToken)temp.get(0);
+					String t = (String)temp.get(0);
+					byte[] signedHash = (byte[])temp.get(1); 
+					byte[] hash = (byte[])temp.get(2); 
+					token = new Token(t, signedHash, hash); 
 					System.out.println("Token Created");
 					return token;
 				}
@@ -325,5 +328,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 				e.printStackTrace(System.err);
 				return false;
 			}
+	 }
+	 public PublicKey getGroupPubKey()
+	 {
+		 return groupPK; 
 	 }
 }

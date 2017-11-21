@@ -26,6 +26,8 @@ import java.security.SecureRandom;
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.IvParameterSpec;
+
 
 
 public class FileThread extends Thread
@@ -53,7 +55,7 @@ public class FileThread extends Thread
 			KeyPair kp = kpg.generateKeyPair();
 			PrivateKey filePrivKey = kp.getPrivate();
 			PublicKey filePubKey = kp.getPublic();
-			System.out.println("FS pub key : " + filePubKey);
+			//System.out.println("FS pub key : " + filePubKey);
 			Envelope pubKey = new Envelope("FILE PUB KEY");
 			pubKey.addObject(filePubKey);
 			output.writeObject(pubKey);
@@ -98,6 +100,23 @@ public class FileThread extends Thread
 						output.writeObject(response); 
 					}
 				}
+				else if(e.getMessage().equals("Verify Sign"))
+				{
+					//Verify the signed hash in token with the received public key. 
+					Token t = (Token)e.getObjContents().get(0); 
+					PublicKey groupPubKey = (PublicKey)e.getObjContents().get(1); 
+					//System.out.println("Group Server's PublicKey in FileServer: " + groupPubKey.toString()); 
+					System.out.println("Verifying Signature..."); 
+					Signature signed = Signature.getInstance("SHA1WithRSA", "BC");
+					signed.initVerify(groupPubKey);
+					//System.out.println("Hash in Token in File Server: " + new String(t.getHash())); 
+					signed.update(t.getHash()); 
+					if(signed.verify(t.getSignedHash()))
+						response = new Envelope("APPROVED"); 
+					else 
+						response = new Envelope("NOT APPROVED"); 
+					output.writeObject(response); 
+				}
 				else if(e.getMessage().equals("DH CHECK"))
 				{
 					BigInteger g256 = new BigInteger(ed.getGen(),16);
@@ -114,46 +133,47 @@ public class FileThread extends Thread
 					//System.out.println(filePair.getPublic().toString());
 					message = new Envelope("SENDING FPK");
 					//sign FPK before sending
-					/*
-					Signature signer = Signature.getInstance("SHA1withRSA");
+					
+					Signature signer = Signature.getInstance("SHA256withRSA", "BC");
 					signer.initSign(filePrivKey); //sign with file server RSA priv key
 					byte[] fileDHPK = filePair.getPublic().getEncoded();
 					signer.update(fileDHPK);
 					//signed file server DH public key
 					byte[] signedFDHPK = signer.sign();
 					message.addObject(signedFDHPK);
-					*/
-					message.addObject(filePair.getPublic());
+					//message.addObject(fileDHPK);  
+					
+					message.addObject(filePair.getPublic());//Send this to verify. 
 					output.writeObject(message); //send file server public key
-					//do
-					//{
+
 					response = (Envelope)input.readObject(); //receive client public key
-					//}while(response == null);
 					PublicKey clientPK = (PublicKey)response.getObjContents().get(0);
 					String clientHash = (String)response.getObjContents().get(1);
-					System.out.println("client hash = "+clientHash);
+					//System.out.println("client hash = "+clientHash);
 					fKA.doPhase(clientPK,true);
 					MessageDigest hash = MessageDigest.getInstance("SHA256","BC");
 					byte[] sharedKey = Arrays.copyOfRange(fKA.generateSecret(),0,16);
 					String serverHash = new String(hash.digest(sharedKey));
-					System.out.println("server hash = "+serverHash);
+					//System.out.println("server hash = "+serverHash);
 					if(serverHash.equals(clientHash))
 					{
 						response = new Envelope("MATCH");
-						/*
 						output.writeObject(response);
 						
-						response = (Envelope)input.readObject();
-						BigInteger c = (BigInteger)response.getObjContents().get(0);
-						System.out.println("generating AES key");
-						SecretKeySpec dhKey = new SecretKeySpec(sharedKey,"AES");
+						Envelope msg = (Envelope)input.readObject();
+	
+						BigInteger challenge =(BigInteger)msg.getObjContents().get(0);
+						byte[] iv = (byte[])msg.getObjContents().get(1);
+						SecretKeySpec sessKey = new SecretKeySpec(sharedKey,"AES");
 						Cipher ciph = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
-						ciph.init(Cipher.ENCRYPT_MODE,dhKey);
-						byte[] encryptedChallenge = ciph.doFinal(c.toByteArray());
-						response = new Envelope("Sending encrypted C");
-						response.addObject(encryptedChallenge);
-						output.writeObject(response);
-						*/
+						ciph.init(Cipher.ENCRYPT_MODE,sessKey,new IvParameterSpec(iv));
+						//System.out.println("server iv = "+new String(iv));
+						System.out.println("received challenge = "+challenge.toString());
+						challenge = challenge.add(BigInteger.ONE);
+						
+						byte[] cipherText = ciph.doFinal(challenge.toByteArray());
+						response = new Envelope("CHECK CHALL"); 
+						response.addObject(cipherText);
 					}
 					else
 					{
@@ -186,11 +206,11 @@ public class FileThread extends Thread
 
 							if (FileServer.fileList.checkFile(remotePath)) {
 								System.out.printf("Error: file already exists at %s\n", remotePath);
-								response = new Envelope("FAIL-FILEEXISTS"); //Success
+								response = new Envelope("FAIL-FILEEXISTS"); //Fail
 							}
 							else if (!yourToken.getGroups().contains(group)) {
 								System.out.printf("Error: user missing valid token for group %s\n", group);
-								response = new Envelope("FAIL-UNAUTHORIZED"); //Success
+								response = new Envelope("FAIL-UNAUTHORIZED"); //Fail
 							}
 							else  {
 								File file = new File("shared_files/"+remotePath.replace('/', '_'));
