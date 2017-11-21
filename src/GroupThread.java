@@ -78,7 +78,7 @@ public class GroupThread extends Thread
 						Signature signer = Signature.getInstance("SHA1withRSA", "BC"); 
 						signer.initSign(groupPrivKey);
 						signer.update(hash); 
-						System.out.println("Hash in Token in File Server: " + new String(hash)); 
+						//System.out.println("Hash in Token in File Server: " + new String(hash)); 
 						yourToken.setSignedHash(signer.sign()); 
 						response.addObject(yourToken.toString());
 						response.addObject(yourToken.getSignedHash()); 
