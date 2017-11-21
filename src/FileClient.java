@@ -24,6 +24,7 @@ import java.security.PublicKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.*;
 
 
 public class FileClient extends Client implements FileClientInterface {
@@ -31,6 +32,7 @@ public class FileClient extends Client implements FileClientInterface {
 	private PublicKey filePK; //DH public key
 	private String fingerprint;
 	private EncryptDecrypt ed = new EncryptDecrypt();
+	private SecretKeySpec dhKey = null;
 	public boolean connect(final String server, final int port, String username, String password) throws IOException, ClassNotFoundException{
 		if(!super.connect(server, port))
 			return false;
@@ -177,8 +179,9 @@ public class FileClient extends Client implements FileClientInterface {
 	    env.addObject(remotePath);
 	    env.addObject(token);
 	    try {
-			output.writeObject(env);
-		    env = (Envelope)input.readObject();
+			env = secureMsg(env);
+			//output.writeObject(env);
+		    //env = (Envelope)input.readObject();
 		    
 			if (env.getMessage().compareTo("OK")==0) {
 				System.out.printf("File %s deleted successfully\n", filename);				
@@ -187,11 +190,11 @@ public class FileClient extends Client implements FileClientInterface {
 				System.out.printf("Error deleting file %s (%s)\n", filename, env.getMessage());
 				return false;
 			}			
-		} catch (IOException e1) {
+		} catch (Exception e1) {
 			e1.printStackTrace();
-		} catch (ClassNotFoundException e1) {
+		} /* catch (ClassNotFoundException e1) {
 			e1.printStackTrace();
-		}
+		} */
 	    	
 		return true;
 	}
@@ -212,16 +215,18 @@ public class FileClient extends Client implements FileClientInterface {
 					    Envelope env = new Envelope("DOWNLOADF"); //Success
 					    env.addObject(sourceFile);
 					    env.addObject(token);
-					    output.writeObject(env); 
+						env = secureMsg(env);
+					    //output.writeObject(env); 
 					
-					    env = (Envelope)input.readObject();
+					    //env = (Envelope)input.readObject();
 					    
 						while (env.getMessage().compareTo("CHUNK")==0) { 
 								fos.write((byte[])env.getObjContents().get(0), 0, (Integer)env.getObjContents().get(1));
 								System.out.printf(".");
 								env = new Envelope("DOWNLOADF"); //Success
-								output.writeObject(env);
-								env = (Envelope)input.readObject();									
+								env = secureMsg(env);
+								//output.writeObject(env);
+								//env = (Envelope)input.readObject();									
 						}										
 						fos.close();
 						
@@ -229,7 +234,25 @@ public class FileClient extends Client implements FileClientInterface {
 					    	 fos.close();
 								System.out.printf("\nTransfer successful file %s\n", sourceFile);
 								env = new Envelope("OK"); //Success
-								output.writeObject(env);
+								//output.writeObject(env);
+								try
+								{
+									Cipher c = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
+									SecureRandom rand = new SecureRandom();
+									byte[] iv = new byte[16];
+									rand.nextBytes(iv);
+									c.init(Cipher.ENCRYPT_MODE,dhKey,new IvParameterSpec(iv));
+									SealedObject sealedobj = new SealedObject(env,c);
+									Envelope encryptedMsg = new Envelope("ENC");
+									encryptedMsg.addObject(sealedobj);
+									encryptedMsg.addObject(iv);
+									output.writeObject(encryptedMsg);
+								}
+								catch(Exception e)
+								{
+									System.out.println("Error: "+e);
+									e.printStackTrace();
+								}
 						}
 						else {
 								System.out.printf("Error reading file %s (%s)\n", sourceFile, env.getMessage());
@@ -244,16 +267,16 @@ public class FileClient extends Client implements FileClientInterface {
 				    }
 								
 			
-			    } catch (IOException e1) {
+			    } catch (Exception e1) {
 			    	
 			    	System.out.printf("Error couldn't create file %s\n", destFile);
 			    	return false;
 			    
 					
 				}
-			    catch (ClassNotFoundException e1) {
+			    /* catch (ClassNotFoundException e1) {
 					e1.printStackTrace();
-				}
+				} */
 				 return true;
 	}
 
@@ -265,9 +288,10 @@ public class FileClient extends Client implements FileClientInterface {
 			 //Tell the server to return the member list
 			 message = new Envelope("LFILES");
 			 message.addObject(token); //Add requester's token
-			 output.writeObject(message); 
+			 e = secureMsg(message);
+			 //output.writeObject(message); 
 			 
-			 e = (Envelope)input.readObject();
+			 //e = (Envelope)input.readObject();
 			 
 			 //If server indicates success, return the member list
 			 if(e.getMessage().equals("OK"))
@@ -302,12 +326,12 @@ public class FileClient extends Client implements FileClientInterface {
 			 message.addObject(destFile);
 			 message.addObject(group);
 			 message.addObject(token); //Add requester's token
-			 output.writeObject(message);
+			 //output.writeObject(message);
 			
 			 
 			 FileInputStream fis = new FileInputStream(sourceFile);
-			 
-			 env = (Envelope)input.readObject();
+			 env = secureMsg(message);
+			 //env = (Envelope)input.readObject();
 			 
 			 //If server indicates success, return the member list
 			 if(env.getMessage().equals("READY"))
@@ -339,11 +363,11 @@ public class FileClient extends Client implements FileClientInterface {
 					
 					message.addObject(buf);
 					message.addObject(new Integer(n));
+					env = secureMsg(message);
+					//output.writeObject(message);
 					
-					output.writeObject(message);
 					
-					
-					env = (Envelope)input.readObject();
+					//env = (Envelope)input.readObject();
 					
 										
 			 }
@@ -354,9 +378,10 @@ public class FileClient extends Client implements FileClientInterface {
 			 { 
 				
 				message = new Envelope("EOF");
-				output.writeObject(message);
+				//output.writeObject(message);
 				
-				env = (Envelope)input.readObject();
+				//env = (Envelope)input.readObject();
+				env = secureMsg(message);
 				if(env.getMessage().compareTo("OK")==0) {
 					System.out.printf("\nFile data upload successful\n");
 				}
@@ -387,8 +412,8 @@ public class FileClient extends Client implements FileClientInterface {
 		Envelope message = new Envelope("Verify Sign"); 
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
-		output.writeObject(message); 
-		Envelope incoming = (Envelope)input.readObject(); 
+		//output.writeObject(message); 
+		Envelope incoming = secureMsg(message); //(Envelope)input.readObject(); 
 		if(incoming.getMessage().equals("APPROVED"))
 		{
 			System.out.println("Signature Approved, Proceeding to delete..."); 
@@ -404,8 +429,8 @@ public class FileClient extends Client implements FileClientInterface {
 		Envelope message = new Envelope("Verify Sign");
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
-		output.writeObject(message); 
-		Envelope incoming = (Envelope)input.readObject(); 
+		//output.writeObject(message); 
+		Envelope incoming = secureMsg(message); //(Envelope)input.readObject(); 
 		if(incoming.getMessage().equals("APPROVED"))
 		{
 			System.out.println("Signature Approved, Proceeding to download..."); 
@@ -422,8 +447,8 @@ public class FileClient extends Client implements FileClientInterface {
 		Envelope message = new Envelope("Verify Sign"); 
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
-		output.writeObject(message); 
-		Envelope incoming = (Envelope)input.readObject(); 
+		//output.writeObject(message); 
+		Envelope incoming = secureMsg(message); //(Envelope)input.readObject();  
 		if(incoming.getMessage().equals("APPROVED"))
 		{
 			System.out.println("Signature Approved, Proceeding to listFiles..."); 
@@ -440,8 +465,8 @@ public class FileClient extends Client implements FileClientInterface {
 		System.out.println("Token before verifying: " + token.toString()); 
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
-		output.writeObject(message); 
-		Envelope incoming = (Envelope)input.readObject();
+		//output.writeObject(message); 
+		Envelope incoming = secureMsg(message); //(Envelope)input.readObject(); 
 		System.out.println("incoming = "+incoming.getMessage());
 		if(incoming.getMessage().equals("APPROVED"))
 		{
@@ -453,5 +478,40 @@ public class FileClient extends Client implements FileClientInterface {
 			System.out.println("Signature was not Approved!!!"); 
 		
 		return false; 
+	}
+	
+	public Envelope secureMsg (Envelope message) {
+		try {
+			// Encrypt original Envelope
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
+			SecureRandom IV = new SecureRandom();
+			byte IVarray[] = new byte[16];
+			IV.nextBytes(IVarray);
+			System.out.println("dhKey = "+dhKey);
+			cipher.init(Cipher.ENCRYPT_MODE, dhKey, new IvParameterSpec(IVarray));
+			SealedObject outCipher = new SealedObject(message, cipher);
+			// Create new Envelope with encrypted data and IV
+			Envelope cipherMsg = new Envelope("ENC");
+			Envelope encResponse = null;
+			cipherMsg.addObject(outCipher);
+			cipherMsg.addObject(IVarray);
+			output.writeObject(cipherMsg);
+			// Get and decrypt response
+			encResponse = (Envelope)input.readObject();
+			if (encResponse.getMessage().equals("ENC")) {
+				// Decrypt Envelope contents
+				SealedObject inCipher = (SealedObject)encResponse.getObjContents().get(0);
+				IVarray = (byte[])encResponse.getObjContents().get(1);
+				String algo = inCipher.getAlgorithm();
+				Cipher envCipher = Cipher.getInstance(algo);
+				envCipher.init(Cipher.DECRYPT_MODE, dhKey, new IvParameterSpec(IVarray));
+				return (Envelope)inCipher.getObject(envCipher);
+			}
+		}
+		catch(Exception e) {
+			System.out.println("Error: " + e);
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
