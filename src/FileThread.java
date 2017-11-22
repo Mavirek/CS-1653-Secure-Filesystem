@@ -67,28 +67,8 @@ public class FileThread extends Thread
 			do
 			{
 				Envelope enc = (Envelope)input.readObject();
-				
 				System.out.println("Request received: " + enc.getMessage());
-				
-				// Handler to list files that this user is allowed to see
-				if(enc.getMessage().equals("Verify Sign"))
-				{
-					//Verify the signed hash in token with the received public key. 
-					Token t = (Token)enc.getObjContents().get(0); 
-					PublicKey groupPubKey = (PublicKey)enc.getObjContents().get(1); 
-					//System.out.println("Group Server's PublicKey in FileServer: " + groupPubKey.toString()); 
-					System.out.println("Verifying Signature..."); 
-					Signature signed = Signature.getInstance("SHA1WithRSA", "BC");
-					signed.initVerify(groupPubKey);
-					//System.out.println("Hash in Token in File Server: " + new String(t.getHash())); 
-					signed.update(t.getHash()); 
-					if(signed.verify(t.getSignedHash()))
-						response = new Envelope("APPROVED"); 
-					else 
-						response = new Envelope("NOT APPROVED"); 
-					output.writeObject(response); 
-				}
-				else if(enc.getMessage().equals("DH CHECK"))
+				if(enc.getMessage().equals("DH CHECK"))
 				{
 					BigInteger g256 = new BigInteger(ed.getGen(),16);
 					BigInteger p256 = new BigInteger(ed.getPrime(),16);
@@ -156,7 +136,25 @@ public class FileThread extends Thread
 				{
 					Envelope e = decryptEnv(enc,sessKey);
 					System.out.println("Request received: " + e.getMessage());
-					if(e.getMessage().equals("LFILES"))
+					if(e.getMessage().equals("Verify Sign"))
+					{
+						//Verify the signed hash in token with the received public key. 
+						Token t = (Token)e.getObjContents().get(0); 
+						PublicKey groupPubKey = (PublicKey)e.getObjContents().get(1); 
+						//System.out.println("Group Server's PublicKey in FileServer: " + groupPubKey.toString()); 
+						System.out.println("Verifying Signature..."); 
+						Signature signed = Signature.getInstance("SHA1WithRSA", "BC");
+						signed.initVerify(groupPubKey);
+						//System.out.println("Hash in Token in File Server: " + new String(t.getHash())); 
+						signed.update(t.getHash()); 
+						if(signed.verify(t.getSignedHash()))
+							response = new Envelope("APPROVED"); 
+						else 
+							response = new Envelope("NOT APPROVED"); 
+						output.writeObject(encryptEnv(response, sessKey)); 
+					}
+					// Handler to list files that this user is allowed to see
+					else if(e.getMessage().equals("LFILES"))
 					{
 						/* TODO: Write this handler */
 						if(e.getObjContents().size() != 1)
@@ -388,13 +386,12 @@ public class FileThread extends Thread
 							}
 						}
 						output.writeObject(encryptEnv(e,sessKey));
-
-					}
-					else if(e.getMessage().equals("DISCONNECT"))
-					{
-						socket.close();
-						proceed = false;
-					}
+					}	
+				}
+				else if(enc.getMessage().equals("DISCONNECT"))
+				{
+					socket.close();
+					proceed = false;
 				}
 			} while(proceed);
 		}

@@ -121,11 +121,12 @@ public class FileClient extends Client implements FileClientInterface {
 				SecureRandom rand = new SecureRandom();
 				rand.nextBytes(iv);
 				//System.out.println("client iv = "+new String(iv));
-				SecretKeySpec dhKey = new SecretKeySpec(sharedKey,"AES");
+				dhKey = new SecretKeySpec(sharedKey,"AES");
 				//Cipher ciph = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
 				//ciph.init(Cipher.ENCRYPT_MODE,dhKey);
 				BigInteger challenge = new BigInteger(32, new SecureRandom());
 				System.out.println("challenge = "+challenge.toString());
+				System.out.println("dhKey in if Match = " + dhKey); 
 				//KeyChallenge kc = new KeyChallenge(challenge,dhKey);
 				//SealedObject outCiph = new SealedObject(challenge,ciph);
 				message = new Envelope("Sending keyChallenge Info");
@@ -462,16 +463,13 @@ public class FileClient extends Client implements FileClientInterface {
 	public boolean upload(String sourceFile, String destFile, String group, UserToken token, PublicKey groupPubKey) throws IOException, ClassNotFoundException{
 		//Verify signature in file server
 		Envelope message = new Envelope("Verify Sign"); 
-		System.out.println("Token before verifying: " + token.toString()); 
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
 		//output.writeObject(message); 
 		Envelope incoming = secureMsg(message); //(Envelope)input.readObject(); 
-		System.out.println("incoming = "+incoming.getMessage());
 		if(incoming.getMessage().equals("APPROVED"))
 		{
 			System.out.println("Signature Approved, Proceeding to upload..."); 
-			System.out.println("In my Upload token: " + token.toString()); 
 			return upload(sourceFile, destFile, group, token);
 		}
 		else if(incoming.getMessage().equals("NOT APPROVED"))
@@ -487,7 +485,6 @@ public class FileClient extends Client implements FileClientInterface {
 			SecureRandom IV = new SecureRandom();
 			byte IVarray[] = new byte[16];
 			IV.nextBytes(IVarray);
-			System.out.println("dhKey = "+dhKey);
 			cipher.init(Cipher.ENCRYPT_MODE, dhKey, new IvParameterSpec(IVarray));
 			SealedObject outCipher = new SealedObject(message, cipher);
 			// Create new Envelope with encrypted data and IV
