@@ -9,12 +9,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.io.*;
+import java.util.*;
 
 public class FileServer extends Server {
 	
 	public static final int SERVER_PORT = 4321;
 	public static FileList fileList;
-	
+	public static Hashtable<String, SessionID> sessionIDs; 
 	public FileServer() {
 		super(SERVER_PORT, "FilePile");
 	}
@@ -22,11 +24,11 @@ public class FileServer extends Server {
 	public FileServer(int _port) {
 		super(_port, "FilePile");
 	}
-	
+	@SuppressWarnings("unchecked")
 	public void start() {
 		String fileFile = "FileList.bin";
+		String sessFile = "SessionIDs.bin"; 
 		ObjectInputStream fileStream;
-		
 		//This runs a thread that saves the lists on program exit
 		Runtime runtime = Runtime.getRuntime();
 		Thread catchExit = new Thread(new ShutDownListenerFS());
@@ -35,6 +37,7 @@ public class FileServer extends Server {
 		//Open user file to get user list
 		try
 		{
+			//Read FileList.bin
 			FileInputStream fis = new FileInputStream(fileFile);
 			fileStream = new ObjectInputStream(fis);
 			fileList = (FileList)fileStream.readObject();
@@ -42,7 +45,6 @@ public class FileServer extends Server {
 		catch(FileNotFoundException e)
 		{
 			System.out.println("FileList Does Not Exist. Creating FileList...");
-			
 			fileList = new FileList();
 			
 		}
@@ -56,7 +58,29 @@ public class FileServer extends Server {
 			System.out.println("Error reading from FileList file");
 			System.exit(-1);
 		}
-		
+		//Open Session file to get SessionIDs Hashtable
+		try
+		{
+			//Read SessionIDs.bin
+			FileInputStream fis = new FileInputStream(sessFile); 
+			fileStream = new ObjectInputStream(fis);
+			sessionIDs = (Hashtable<String, SessionID>)fileStream.readObject(); 
+		}
+		catch(FileNotFoundException e)
+		{
+			System.out.println("SessionIDs Does Not Exist. Creating SessionIDs...");
+			sessionIDs = new Hashtable<String, SessionID>(); 
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error reading from FileList file");
+			System.exit(-1);
+		}
+		catch(ClassNotFoundException e)
+		{
+			System.out.println("Error reading from FileList file");
+			System.exit(-1);
+		}
 		File file = new File("shared_files");
 		 if (file.mkdir()) {
 			 System.out.println("Created new shared_files directory");
@@ -113,6 +137,8 @@ class ShutDownListenerFS implements Runnable
 		{
 			outStream = new ObjectOutputStream(new FileOutputStream("FileList.bin"));
 			outStream.writeObject(FileServer.fileList);
+			outStream = new ObjectOutputStream(new FileOutputStream("SessionIDs.bin")); 
+			outStream.writeObject(FileServer.sessionIDs); 
 		}
 		catch(Exception e)
 		{
