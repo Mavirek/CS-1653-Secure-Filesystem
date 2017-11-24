@@ -26,6 +26,10 @@ public class SessionID implements java.io.Serializable
 		randomNumber = sr.nextInt(); 
 		sequenceNumber = 0; 
 	}
+	public void setSession(int x)
+	{
+		sequenceNumber = x; 
+	}
 	public String toString()
 	{
 		return username + ":" + sdf.format(date) + ":" + randomNumber + ":" + sequenceNumber;  

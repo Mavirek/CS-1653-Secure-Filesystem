@@ -128,8 +128,8 @@ public class FileClient extends Client implements FileClientInterface {
 				//Cipher ciph = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
 				//ciph.init(Cipher.ENCRYPT_MODE,dhKey);
 				BigInteger challenge = new BigInteger(32, new SecureRandom());
-				System.out.println("challenge = "+challenge.toString());
-				System.out.println("dhKey in if Match = " + dhKey); 
+				//System.out.println("challenge = "+challenge.toString());
+				//System.out.println("dhKey in if Match = " + dhKey); 
 				//KeyChallenge kc = new KeyChallenge(challenge,dhKey);
 				//SealedObject outCiph = new SealedObject(challenge,ciph);
 				message = new Envelope("Sending keyChallenge Info");
@@ -183,7 +183,7 @@ public class FileClient extends Client implements FileClientInterface {
 	    env.addObject(remotePath);
 	    env.addObject(token);
 		env.addObject(client); //ADD SessionID
-		
+		env.setStringRep(remotePath + ":" + token.toString() + ":" + client.toString()); 
 	    try {
 			env = secureMsg(env);
 			client.nextMsg(); 
@@ -223,6 +223,7 @@ public class FileClient extends Client implements FileClientInterface {
 				env.addObject(sourceFile);
 				env.addObject(token);
 				env.addObject(client); 
+				env.setStringRep(sourceFile + ":" + token.toString() + ":" + client.toString()); 
 				env = secureMsg(env);
 				client.nextMsg(); 
 				//output.writeObject(env); 
@@ -298,6 +299,7 @@ public class FileClient extends Client implements FileClientInterface {
 			 message = new Envelope("LFILES");
 			 message.addObject(token); //Add requester's token
 			 message.addObject(client);
+			 message.setStringRep(token.toString() + ":" + client.toString()); 
 			 e = secureMsg(message);
 			 client.nextMsg(); 
 			 //output.writeObject(message); 
@@ -338,6 +340,7 @@ public class FileClient extends Client implements FileClientInterface {
 			 message.addObject(group);
 			 message.addObject(token); //Add requester's token
 			 message.addObject(client); 
+			 message.setStringRep(destFile + ":" + group + ":" + token.toString() + ":" + client.toString()); 
 			 //output.writeObject(message);
 			
 			 
@@ -376,6 +379,7 @@ public class FileClient extends Client implements FileClientInterface {
 					
 					message.addObject(buf);
 					message.addObject(new Integer(n));
+					message.setStringRep(new String(buf) + ":" + n); 
 					env = secureMsg(message);
 					//output.writeObject(message);
 					
@@ -425,6 +429,7 @@ public class FileClient extends Client implements FileClientInterface {
 		Envelope message = new Envelope("Verify Sign"); 
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
+		message.setStringRep(token.toString() + ":" + groupPubKey.toString()); 
 		//output.writeObject(message); 
 		Envelope incoming = secureMsg(message); //(Envelope)input.readObject(); 
 		if(incoming.getMessage().equals("APPROVED"))
@@ -442,6 +447,7 @@ public class FileClient extends Client implements FileClientInterface {
 		Envelope message = new Envelope("Verify Sign");
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
+		message.setStringRep(token.toString() + ":" + groupPubKey.toString()); 
 		//output.writeObject(message); 
 		Envelope incoming = secureMsg(message); //(Envelope)input.readObject(); 
 		if(incoming.getMessage().equals("APPROVED"))
@@ -460,6 +466,7 @@ public class FileClient extends Client implements FileClientInterface {
 		Envelope message = new Envelope("Verify Sign"); 
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
+		message.setStringRep(token.toString() + ":" + groupPubKey.toString()); 
 		//output.writeObject(message); 
 		Envelope incoming = secureMsg(message); //(Envelope)input.readObject();  
 		if(incoming.getMessage().equals("APPROVED"))
@@ -477,6 +484,7 @@ public class FileClient extends Client implements FileClientInterface {
 		Envelope message = new Envelope("Verify Sign"); 
 		message.addObject(token); 
 		message.addObject(groupPubKey); 
+		message.setStringRep(token.toString() + ":" + groupPubKey.toString()); 
 		//output.writeObject(message); 
 		Envelope incoming = secureMsg(message); //(Envelope)input.readObject(); 
 		if(incoming.getMessage().equals("APPROVED"))
@@ -492,6 +500,10 @@ public class FileClient extends Client implements FileClientInterface {
 	
 	public Envelope secureMsg (Envelope message) {
 		try {
+			// Generate Hmac hash 
+			SecretKeySpec key = genKey(); 
+			byte[] hash = genHash(message.toString(), key);
+			message.addObject(key); //Add key used for hmac hash gen. 
 			// Encrypt original Envelope
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
 			SecureRandom IV = new SecureRandom();
@@ -504,6 +516,7 @@ public class FileClient extends Client implements FileClientInterface {
 			Envelope encResponse = null;
 			cipherMsg.addObject(outCipher);
 			cipherMsg.addObject(IVarray);
+			cipherMsg.addObject(hash); 
 			output.writeObject(cipherMsg);
 			// Get and decrypt response
 			encResponse = (Envelope)input.readObject();
@@ -522,5 +535,26 @@ public class FileClient extends Client implements FileClientInterface {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	public byte[] genHash(String message, SecretKeySpec key)
+	{
+		try{
+			Mac hmac = Mac.getInstance("Hmac-SHA256", "BC");
+			hmac.init(key); 
+			return hmac.doFinal(message.getBytes());
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error: " + e); 
+			e.printStackTrace(); 
+		}
+		return null; 
+	}
+	public SecretKeySpec genKey()
+	{
+		SecureRandom random = new SecureRandom();
+		byte[] keyBytes = new byte[16];
+		random.nextBytes(keyBytes);
+		return new SecretKeySpec(keyBytes, "AES");
 	}
 }
