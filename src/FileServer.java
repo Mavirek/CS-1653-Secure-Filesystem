@@ -16,11 +16,7 @@ public class FileServer extends Server {
 
 	public static final int SERVER_PORT = 4321;
 	public static FileList fileList;
-<<<<<<< HEAD
-
-=======
 	public static Hashtable<String, SessionID> sessionIDs;
->>>>>>> fe0c01feb18ed3a13d8443c80e5a4b92c3a6729e
 	public FileServer() {
 		super(SERVER_PORT, "ALPHA");
 	}
@@ -28,19 +24,11 @@ public class FileServer extends Server {
 	public FileServer(int _port) {
 		super(_port, "FilePile");
 	}
-<<<<<<< HEAD
 
-=======
-	@SuppressWarnings("unchecked")
->>>>>>> fe0c01feb18ed3a13d8443c80e5a4b92c3a6729e
 	public void start() {
 		String fileFile = "FileList.bin";
 		String sessFile = "SessionIDs.bin";
 		ObjectInputStream fileStream;
-<<<<<<< HEAD
-
-=======
->>>>>>> fe0c01feb18ed3a13d8443c80e5a4b92c3a6729e
 		//This runs a thread that saves the lists on program exit
 		Runtime runtime = Runtime.getRuntime();
 		Thread catchExit = new Thread(new ShutDownListenerFS());
@@ -57,10 +45,6 @@ public class FileServer extends Server {
 		catch(FileNotFoundException e)
 		{
 			System.out.println("FileList Does Not Exist. Creating FileList...");
-<<<<<<< HEAD
-
-=======
->>>>>>> fe0c01feb18ed3a13d8443c80e5a4b92c3a6729e
 			fileList = new FileList();
 
 		}
