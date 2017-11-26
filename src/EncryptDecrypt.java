@@ -39,7 +39,6 @@ public class EncryptDecrypt {
       System.out.println(e);
     }
 
-    //return new String(md.digest(msg.getBytes()));
   	 return md.digest();
   }
 
@@ -50,68 +49,17 @@ public class EncryptDecrypt {
  		}
  		return builder.toString();
  	}
-/**
-  public static String[] rsaEncrypt(byte[] userBytes, byte[] passBytes, PublicKey pub) {
-
-    try {
-
-      //System.out.println("Encrypt pubKey : " + pub);
-
-      byte[] decryptedUser;
-      byte[] decryptedPassHash;
-
-      Cipher enc = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
-  		enc.init(Cipher.ENCRYPT_MODE, pub);
-
-    //  for(int x = 0; x < toEncrypt.length; x++) {
-
-      //  toEncrypt[x] = new String (enc.doFinal(toEncrypt[x].getBytes()));
-      decryptedUser = enc.doFinal(userBytes);
-      decryptedPassHash = enc.doFinal(passBytes);
-
-    //  }
-    }
-    catch(Exception e) {
-      System.out.println(e);
-    }
-
-      return toEncrypt;
-  }
-
-  public static String[] rsaDecrypt(String[] toDecrypt, PrivateKey pri) {
-
-    try {
-      System.out.println("DECRYPT!!");
-      System.out.println("Username : " + toDecrypt[0]);
-      Cipher dec = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
-      dec.init(Cipher.DECRYPT_MODE, pri);
-    //  System.out.println("DECRYPT2!!!");
-      for(int x = 0; x < toDecrypt.length; x++) {
-
-        toDecrypt[x] = new String(dec.doFinal(toDecrypt[x].getBytes()));
-        System.out.println("HERE!!!!");
-        if(x == 0)
-          System.out.println("Decrypt username : " + toDecrypt[x]);
-      }
-    }
-    catch(Exception e) {
-      System.out.println(e);
-    }
-
-    return toDecrypt;
-  }
-**/
 
   public static String getPrime()
   {
 	  return p;
   }
-  
+
   public static String getGen()
   {
 	  return "02";
   }
-  
+
   public static String passDH(byte[] passHash) {
 
     BigInteger g = new BigInteger("02", 16);
