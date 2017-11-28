@@ -8,7 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.*; 
+import java.util.*;
 import java.math.*;
 import java.security.*;
 import java.security.NoSuchAlgorithmException;
@@ -28,6 +28,7 @@ import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.*;
+import java.net.*;
 
 
 public class FileThread extends Thread
@@ -35,12 +36,16 @@ public class FileThread extends Thread
 	private final Socket socket;
 	private EncryptDecrypt ed = new EncryptDecrypt();
 	private SecretKeySpec sessKey = null;
+	private String serverIP;
+	private int serverPort;
 
-	public FileThread(Socket _socket)
+	public FileThread(Socket _socket, String serverIP, int serverPort)
 	{
 		socket = _socket;
+		this.serverIP = serverIP;
+		this.serverPort = serverPort;
 	}
-	
+
 	public void run()
 	{
 		Security.addProvider(new BouncyCastleProvider());
@@ -60,7 +65,7 @@ public class FileThread extends Thread
 			Envelope pubKey = new Envelope("FILE PUB KEY");
 			pubKey.addObject(filePubKey);
 			output.writeObject(pubKey);
-			
+
 			do
 			{
 				Envelope enc = (Envelope)input.readObject();
@@ -69,19 +74,19 @@ public class FileThread extends Thread
 				{
 					BigInteger g256 = new BigInteger(ed.getGen(),16);
 					BigInteger p256 = new BigInteger(ed.getPrime(),16);
-					
+
 					DHParameterSpec dhParams = new DHParameterSpec(p256,g256);
 					KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH","BC");
 					keyGen.initialize(dhParams, new SecureRandom());
-					
+
 					KeyAgreement fKA = KeyAgreement.getInstance("DH","BC");
 					KeyPair filePair = keyGen.generateKeyPair();
-					
+
 					fKA.init(filePair.getPrivate());
 					//System.out.println(filePair.getPublic().toString());
 					message = new Envelope("SENDING FPK");
 					//sign FPK before sending
-					
+
 					Signature signer = Signature.getInstance("SHA256withRSA", "BC");
 					signer.initSign(filePrivKey); //sign with file server RSA priv key
 					byte[] fileDHPK = filePair.getPublic().getEncoded();
@@ -89,9 +94,9 @@ public class FileThread extends Thread
 					//signed file server DH public key
 					byte[] signedFDHPK = signer.sign();
 					message.addObject(signedFDHPK);
-					//message.addObject(fileDHPK);  
-					
-					message.addObject(filePair.getPublic());//Send this to verify. 
+					//message.addObject(fileDHPK);
+
+					message.addObject(filePair.getPublic());//Send this to verify.
 					output.writeObject(message); //send file server public key
 
 					response = (Envelope)input.readObject(); //receive client public key
@@ -107,9 +112,9 @@ public class FileThread extends Thread
 					{
 						response = new Envelope("MATCH");
 						output.writeObject(response);
-						
+
 						Envelope msg = (Envelope)input.readObject();
-	
+
 						BigInteger challenge =(BigInteger)msg.getObjContents().get(0);
 						byte[] iv = (byte[])msg.getObjContents().get(1);
 						sessKey = new SecretKeySpec(sharedKey,"AES");
@@ -117,9 +122,9 @@ public class FileThread extends Thread
 						ciph.init(Cipher.ENCRYPT_MODE,sessKey,new IvParameterSpec(iv));
 						//System.out.println("server iv = "+new String(iv));
 						challenge = challenge.add(BigInteger.ONE);
-						
+
 						byte[] cipherText = ciph.doFinal(challenge.toByteArray());
-						response = new Envelope("CHECK CHALL"); 
+						response = new Envelope("CHECK CHALL");
 						response.addObject(cipherText);
 					}
 					else
@@ -131,45 +136,59 @@ public class FileThread extends Thread
 				else if(enc.getMessage().equals("ENC"))
 				{
 					Envelope e = decryptEnv(enc,sessKey);
+					System.out.println("Before null");
 					if(e != null)
-					{ 
+					{
 						System.out.println("Request received: " + e.getMessage());
 						if(e.getMessage().equals("Verify Sign"))
 						{
-							//Verify the signed hash in token with the received public key. 
-							Token t = (Token)e.getObjContents().get(0); 
-							PublicKey groupPubKey = (PublicKey)e.getObjContents().get(1); 
-							//System.out.println("Group Server's PublicKey in FileServer: " + groupPubKey.toString()); 
-							System.out.println("Verifying Signature..."); 
+							//Verify the signed hash in token with the received public key.
+							Token t = (Token)e.getObjContents().get(0);
+							PublicKey groupPubKey = (PublicKey)e.getObjContents().get(1);
+							//System.out.println("Group Server's PublicKey in FileServer: " + groupPubKey.toString());
+							System.out.println("Verifying Signature...");
 							Signature signed = Signature.getInstance("SHA1WithRSA", "BC");
 							signed.initVerify(groupPubKey);
-							//System.out.println("Hash in Token in File Server: " + new String(t.getHash())); 
-							signed.update(t.getHash()); 
-							if(signed.verify(t.getSignedHash()))
-								response = new Envelope("APPROVED"); 
-							else 
-								response = new Envelope("NOT APPROVED"); 
-							output.writeObject(encryptEnv(response, sessKey)); 
+							//System.out.println("Hash in Token in File Server: " + new String(t.getHash()));
+							System.out.println(t.toString());
+							signed.update(t.getHash());
+							if(signed.verify(t.getSignedHash())) {
+
+								System.out.println("Sign passed");
+								if(verifyServer(t)) {
+									System.out.println("Server passed");
+									response = new Envelope("APPROVED");
+								}
+								else {
+									System.out.println("Server failed");
+									response = new Envelope("NOT APPROVED");
+								}
+							}
+							else {
+								System.out.println("Sign failed");
+								response = new Envelope("NOT APPROVED");
+							}
+							output.writeObject(encryptEnv(response, sessKey));
 						}
 						// Handler to list files that this user is allowed to see
 						else if(e.getMessage().equals("LFILES"))
 						{
 							/* TODO: Write this handler */
 							if(e.getObjContents().size() != 2)
-								response = new Envelope("FAIL-BADCONTENTS"); 
+								response = new Envelope("FAIL-BADCONTENTS");
 							else if(e.getObjContents().get(0) == null)
-								response = new Envelope("FAIL-BADTOKEN"); 
+								response = new Envelope("FAIL-BADTOKEN");
 							else{
-								//Change Token getGroups to the Hashtable 
-								UserToken ut = (Token)e.getObjContents().get(0); 
-								SessionID client = (SessionID)e.getObjContents().get(1); 
+								//Change Token getGroups to the Hashtable
+								UserToken ut = (Token)e.getObjContents().get(0);
+								SessionID client = (SessionID)e.getObjContents().get(1);
 								if(verifySessID(client))
 								{
 									ArrayList<ShareFile> list = FileServer.fileList.getFiles();
-									
-									ArrayList<String> groups = (ArrayList<String>)ut.getGroups(); 
-									//System.out.println("list size: " + list.size() + " groups size: " + groups.size()); 
-									ArrayList<String> result = new ArrayList<String>(); 
+
+									ArrayList<String> groups = (ArrayList<String>)ut.getGroups();
+									//System.out.println("list size: " + list.size() + " groups size: " + groups.size());
+									ArrayList<String> result = new ArrayList<String>();
 									for(int i = 0; i < groups.size(); i++)
 									{
 										for(int j = 0; j < list.size(); j++)
@@ -177,18 +196,18 @@ public class FileThread extends Thread
 											if(list.get(j).getGroup().equals(groups.get(i)))
 											{
 												//System.out.println("owner: "+list.get(j).getOwner()+" group: "+list.get(j).getGroup()+" path: "+list.get(j).getPath());
-												result.add(list.get(j).getPath()); 
-											}									
+												result.add(list.get(j).getPath());
+											}
 										}
 									}
-									response = new Envelope("OK"); 
-									response.addObject(result); 
+									response = new Envelope("OK");
+									response.addObject(result);
 								}
 								else
 								{
 									response = new Envelope("FAIL-BADSESSIONID");
 								}
-								output.writeObject(encryptEnv(response,sessKey)); 
+								output.writeObject(encryptEnv(response,sessKey));
 							}
 						}
 						else if(e.getMessage().equals("UPLOADF"))
@@ -210,13 +229,13 @@ public class FileThread extends Thread
 									response = new Envelope("FAIL-BADTOKEN");
 								}
 								if(e.getObjContents().get(3) == null) {
-									response = new Envelope("FAIL-BADSESSIONID"); 
+									response = new Envelope("FAIL-BADSESSIONID");
 								}
 								else {
 									String remotePath = (String)e.getObjContents().get(0);
 									String group = (String)e.getObjContents().get(1);
 									UserToken yourToken = (UserToken)e.getObjContents().get(2); //Extract token
-									SessionID client = (SessionID)e.getObjContents().get(3); 
+									SessionID client = (SessionID)e.getObjContents().get(3);
 									if(verifySessID(client))
 									{
 										if (FileServer.fileList.checkFile(remotePath)) {
@@ -257,7 +276,7 @@ public class FileThread extends Thread
 										}
 									}
 									else
-										response = new Envelope("FAIL-BADSESSIONID"); 
+										response = new Envelope("FAIL-BADSESSIONID");
 								}
 							}
 							output.writeObject(encryptEnv(response,sessKey));
@@ -266,7 +285,7 @@ public class FileThread extends Thread
 
 							String remotePath = (String)e.getObjContents().get(0);
 							Token t = (Token)e.getObjContents().get(1);
-							SessionID client = (SessionID)e.getObjContents().get(2); 
+							SessionID client = (SessionID)e.getObjContents().get(2);
 							if(verifySessID(client))
 							{
 								ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
@@ -345,7 +364,7 @@ public class FileThread extends Thread
 												System.out.printf("Download failed: %s\n", e.getMessage());
 
 											}
-											fis.close(); 
+											fis.close();
 										}
 									}
 									catch(Exception e1)
@@ -361,7 +380,7 @@ public class FileThread extends Thread
 
 							String remotePath = (String)e.getObjContents().get(0);
 							Token t = (Token)e.getObjContents().get(1);
-							SessionID client = (SessionID)e.getObjContents().get(2); 
+							SessionID client = (SessionID)e.getObjContents().get(2);
 							if(verifySessID(client))
 							{
 								ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
@@ -431,7 +450,7 @@ public class FileThread extends Thread
 			e.printStackTrace(System.err);
 		}
 	}
-	
+
 	private Envelope encryptEnv(Envelope msg, SecretKeySpec sessKey)
 	{
 		try
@@ -454,38 +473,38 @@ public class FileThread extends Thread
 		}
 		return null;
 	}
-	
+
 	private Envelope decryptEnv(Envelope msg, SecretKeySpec sessKey)
 	{
 		boolean hashed = false;
-		if(msg.getObjContents().size() == 3) hashed = true; 
+		if(msg.getObjContents().size() == 3) hashed = true;
 		SealedObject sealedobj = (SealedObject)msg.getObjContents().get(0);
 		byte[] iv = (byte[])msg.getObjContents().get(1);
-		byte[] hash = null; 
-		if(hashed) hash = (byte[]) msg.getObjContents().get(2); 
-		
+		byte[] hash = null;
+		if(hashed) hash = (byte[]) msg.getObjContents().get(2);
+
 		try
 		{
 			String alg = sealedobj.getAlgorithm();
 			Cipher c = Cipher.getInstance(alg);
 			c.init(Cipher.DECRYPT_MODE,sessKey,new IvParameterSpec(iv));
 			Envelope message = (Envelope)sealedobj.getObject(c);
-			
+
 			// If message was hashed check the hash
 			if(hashed)
 			{
-				//Remove the hash key from envelope before returning. 
-				//Hash key is in the last index of object contents. 
-				Envelope newMsg = new Envelope(message.getMessage()); 
+				//Remove the hash key from envelope before returning.
+				//Hash key is in the last index of object contents.
+				Envelope newMsg = new Envelope(message.getMessage());
 				for(int i = 0; i < message.getObjContents().size() -1; i++)
-					newMsg.addObject(message.getObjContents().get(i)); 
-				SecretKeySpec key = (SecretKeySpec)message.getObjContents().get(message.getObjContents().size()-1); 
-				newMsg.setStringRep(message.toString()); 
+					newMsg.addObject(message.getObjContents().get(i));
+				SecretKeySpec key = (SecretKeySpec)message.getObjContents().get(message.getObjContents().size()-1);
+				newMsg.setStringRep(message.toString());
 				if(verifyHash(newMsg, hash, key))
 					return newMsg;
 			}
-			else 
-				return message; 
+			else
+				return message;
 		}
 		catch(Exception e)
 		{
@@ -516,8 +535,9 @@ public class FileThread extends Thread
 		
 		if(FileServer.acceptedSessionIDs.containsKey(clientID.getUserName()))
 		{
-			//Check date is today 
+			//Check date is today
 			if(!clientID.isToday())
+
 				return false; 
 			
 			//Get the last sessionID stored for the client 
@@ -534,7 +554,7 @@ public class FileThread extends Thread
 				return true; 
 			}
 		}
-		//This is the first time the client has connected 
+		//This is the first time the client has connected
 		else
 		{
 			//Store this sessionID in the list and accept it. 
@@ -542,7 +562,7 @@ public class FileThread extends Thread
 			//System.out.println("SessionID: " + clientID.toString()); 
 			return true; 
 		}
-		return false; 
+		return false;
 	}
 	private boolean saveSessID(SessionID clientID)
 	{
@@ -565,15 +585,55 @@ public class FileThread extends Thread
 		System.out.println("Verifying Hash...");
 		try{
 			Mac hmac = Mac.getInstance("Hmac-SHA256", "BC");
-			hmac.init(key); 
+			hmac.init(key);
 			byte[] myHash = hmac.doFinal(message.toString().getBytes());
-			return (new String(myHash)).equals(new String(hash)); 
+			return (new String(myHash)).equals(new String(hash));
 		}
 		catch(Exception e)
 		{
-			System.out.println("Error: " + e); 
-			e.printStackTrace(); 
+			System.out.println("Error: " + e);
+			e.printStackTrace();
 		}
-		return false; 
+		return false;
+	}
+
+	private boolean verifyServer(Token t) {
+
+		String server = socket.getLocalAddress().toString();
+		int port = socket.getLocalPort();
+
+		try {
+			System.out.println("FIle Server IP : " + InetAddress.getByName("localhost"));
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		StringBuilder sb = new StringBuilder("");
+		sb.append(serverIP);
+		sb.append("#");
+		sb.append(serverPort);
+		System.out.println(t.getFileServer());
+		System.out.println(sb.toString());
+		String[] tsplit = t.getFileServer().split("#");
+
+		try {
+			System.out.println(InetAddress.getByName(tsplit[0]).equals(socket.getLocalAddress()));
+			System.out.println(Integer.parseInt(tsplit[1]) == port);
+			System.out.println("Port : " + port);
+
+
+
+			if(InetAddress.getByName(tsplit[0]).equals(socket.getLocalAddress()) && Integer.parseInt(tsplit[1]) == socket.getLocalPort())
+				return true;
+			else
+				return false;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("ERROR");
+		return false;
 	}
 }

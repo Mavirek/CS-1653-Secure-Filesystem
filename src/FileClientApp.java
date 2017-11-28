@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.security.*;
+import java.net.*;
 public class FileClientApp
 {
 	protected static Token userToken = null;
@@ -12,6 +13,8 @@ public class FileClientApp
 			System.err.println("Usage: java FileClientApp <Username> <Password> <Group Server Name> <File Server Name> <Group Port> <File Port>\n");
 			System.exit(-1);
 		}
+		System.out.println("FIle Server IP : " + InetAddress.getByName(args[3]));
+		//System.out.println("FIle Server IP4 : " + new Inet4Address().getHostAddress());
 		PublicKey groupPubKey = null;
 		FileClient fc = new FileClient();
 		GroupClient gc = new GroupClient();
@@ -26,7 +29,7 @@ public class FileClientApp
 			switch(z)
 			{
 				case 1:
-					if(gc.connect(args[2],Integer.parseInt(args[4]), args[0], args[1]))
+					if(gc.connect(args[2],Integer.parseInt(args[4]), args[0], args[1],  args[3], Integer.parseInt(args[5])))
 					{
 						System.out.println("Connected to Group Server: "+args[2]+" Port: "+args[4]);
 						//Get the groups public key to use for file server signature verification
@@ -234,6 +237,7 @@ public class FileClientApp
 						System.out.println("Please Connect to Group Server and Get a Token");
 						break;
 					}
+					System.out.println(userToken.toString());
 					if(fc.connect(args[3],Integer.parseInt(args[5]),args[0],args[1]))
 					{
 						Token t = userToken;

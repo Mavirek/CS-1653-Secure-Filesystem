@@ -80,33 +80,36 @@ public class GroupThread extends Thread
 						SessionID client = (SessionID)message.getObjContents().get(1); //Get SessionID
 						if(verifySessID(client))
 						{
-							if(username == null)
-							{
-								response = new Envelope("FAIL");
-								response.addObject(null);
-								output.writeObject(encryptEnv(response));
-							}
-							else
-							{
-								Token yourToken = createToken(username); //Create a token
+              if(username == null) {
+							  response = new Envelope("FAIL");
+							  response.addObject(null);
+							  output.writeObject(encryptEnv(response));
+						  }
+              else
+              {
+                StringBuilder sb = new StringBuilder("");
+                sb.append((String)message.getObjContents().get(1));
+                sb.append("#");
+                sb.append((int)message.getObjContents().get(2));
+                Token yourToken = createToken(username, sb.toString()); //Create a token
 
-								//Respond to the client. On error, the client will receive a null token
-								response = new Envelope("OK");
+                //Respond to the client. On error, the client will receive a null token
+                response = new Envelope("OK");
 
-								//Generate a Signature
-								System.out.println("Group Server Signing Token...");
-								byte[] hash = yourToken.genHash();
-								//signedHash = [hash]pk;
-								Signature signer = Signature.getInstance("SHA1withRSA", "BC");
-								signer.initSign(groupPrivKey);
-								signer.update(hash);
-								//System.out.println("Hash in Token in File Server: " + new String(hash));
-								yourToken.setSignedHash(signer.sign());
-								response.addObject(yourToken.toString());
-								response.addObject(yourToken.getSignedHash());
-								response.addObject(hash);
-								output.writeObject(encryptEnv(response));
-							}
+                //Generate a Signature
+                System.out.println("Group Server Signing Token...");
+                byte[] hash = yourToken.genHash();
+                //signedHash = [hash]pk;
+                Signature signer = Signature.getInstance("SHA1withRSA", "BC");
+                signer.initSign(groupPrivKey);
+                signer.update(hash);
+                //System.out.println("Hash in Token in File Server: " + new String(hash));
+                yourToken.setSignedHash(signer.sign());
+                response.addObject(yourToken.toString());
+                response.addObject(yourToken.getSignedHash());
+                response.addObject(hash);
+                output.writeObject(encryptEnv(response));
+              }
 						}
 					}
 					else if(message.getMessage().equals("CUSER")) //Client wants to create a user
@@ -518,13 +521,13 @@ public class GroupThread extends Thread
 	}
 
 	//Method to create tokens
-	private Token createToken(String username)
+	private Token createToken(String username, String fileServer)
 	{
 		//Check that user exists
 		if(my_gs.userList.checkUser(username))
 		{
 			//Issue a new token with server's name, user's name, and user's groups
-			Token yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username));
+			Token yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username), fileServer);
 			return yourToken;
 		}
 		else

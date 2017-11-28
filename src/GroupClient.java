@@ -33,10 +33,16 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 private SecureRandom random = new SecureRandom();
 	 private byte[] challengeD = new byte[4];
 	 private SecretKeySpec sessKey;
-	 private SessionID client = null; 
- 	 public boolean connect(final String server, final int port, String username, String password) throws IOException, ClassNotFoundException{
+   private SessionID client = null; 
+	 private String fileServer;
+	 private int filePort;
+
+ 	 public boolean connect(final String server, final int port, String username, String password, String fileServer, int filePort) throws IOException, ClassNotFoundException{
 		if(!super.connect(server, port))
 			return false;
+
+		this.fileServer = fileServer;
+		this.filePort = filePort;
 		Envelope message = null, response = null;
 		client = new SessionID(username); 
 		groupPubKey = (Envelope)input.readObject();
@@ -169,6 +175,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 			//Tell the server to return a token.
 			message = new Envelope("GET");
 			message.addObject(username); //Add user name string
+			message.addObject(fileServer);
+			message.addObject(filePort);
 			message.addObject(client);
 			output.writeObject(encryptEnv(message));
 

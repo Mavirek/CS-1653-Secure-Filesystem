@@ -18,13 +18,15 @@ public class FileServer extends Server {
 	public static FileList fileList;
 	public static Hashtable<String, SessionID> acceptedSessionIDs;
 	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
+  
 	public FileServer() {
-		super(SERVER_PORT, "ALPHA");
+		super(SERVER_PORT, "FilePile");
 	}
 
 	public FileServer(int _port) {
 		super(_port, "FilePile");
 	}
+  
 	@SuppressWarnings("unchecked")
 	public void start() {
 		String fileFile = "FileList.bin";
@@ -114,7 +116,14 @@ public class FileServer extends Server {
 			while(running)
 			{
 				sock = serverSock.accept();
-				thread = new FileThread(sock);
+				System.out.println("Sock host name : " + sock.getInetAddress().getHostName());
+				System.out.println("Sock IP : " + sock.getInetAddress());
+				System.out.println("Sock Local port : " +sock.getLocalPort());
+				System.out.println("Sock string : " + sock.toString());
+				System.out.println("ServerSock host name : " + serverSock.getInetAddress().getHostName());
+				System.out.println("ServerSock IP : " + serverSock.getInetAddress());
+				System.out.println("ServerSock port : " + serverSock.getLocalPort());
+				thread = new FileThread(sock, sock.getInetAddress().toString(), port);
 				thread.start();
 			}
 
