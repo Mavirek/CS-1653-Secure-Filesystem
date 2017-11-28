@@ -16,7 +16,9 @@ public class FileServer extends Server {
 
 	public static final int SERVER_PORT = 4321;
 	public static FileList fileList;
-	public static Hashtable<String, SessionID> sessionIDs;
+	public static Hashtable<String, SessionID> acceptedSessionIDs;
+	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
+  
 	public FileServer() {
 		super(SERVER_PORT, "FilePile");
 	}
@@ -24,10 +26,11 @@ public class FileServer extends Server {
 	public FileServer(int _port) {
 		super(_port, "FilePile");
 	}
-
+  
+	@SuppressWarnings("unchecked")
 	public void start() {
 		String fileFile = "FileList.bin";
-		String sessFile = "SessionIDs.bin";
+		String sessFile = "SessionIDFS.bin";
 		ObjectInputStream fileStream;
 		//This runs a thread that saves the lists on program exit
 		Runtime runtime = Runtime.getRuntime();
@@ -61,15 +64,17 @@ public class FileServer extends Server {
 		//Open Session file to get SessionIDs Hashtable
 		try
 		{
-			//Read SessionIDs.bin
+			//Read SessionIDFS.bin
 			FileInputStream fis = new FileInputStream(sessFile);
 			fileStream = new ObjectInputStream(fis);
-			sessionIDs = (Hashtable<String, SessionID>)fileStream.readObject();
+			unacceptedSessionIDs = (Hashtable<String, SessionID>)fileStream.readObject();
+			acceptedSessionIDs = new Hashtable<String, SessionID>(); 
 		}
 		catch(FileNotFoundException e)
 		{
 			System.out.println("SessionIDs Does Not Exist. Creating SessionIDs...");
-			sessionIDs = new Hashtable<String, SessionID>();
+			acceptedSessionIDs = new Hashtable<String, SessionID>();
+			unacceptedSessionIDs = new Hashtable<String, SessionID>(); 
 		}
 		catch(IOException e)
 		{
@@ -144,8 +149,8 @@ class ShutDownListenerFS implements Runnable
 		{
 			outStream = new ObjectOutputStream(new FileOutputStream("FileList.bin"));
 			outStream.writeObject(FileServer.fileList);
-			outStream = new ObjectOutputStream(new FileOutputStream("SessionIDs.bin"));
-			outStream.writeObject(FileServer.sessionIDs);
+			outStream = new ObjectOutputStream(new FileOutputStream("SessionIDFS.bin"));
+			outStream.writeObject(FileServer.unacceptedSessionIDs);
 		}
 		catch(Exception e)
 		{

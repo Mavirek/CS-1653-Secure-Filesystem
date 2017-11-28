@@ -24,6 +24,8 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SealedObject;
+import javax.crypto.*;
+
 
 public class GroupThread extends Thread
 {
@@ -71,51 +73,55 @@ public class GroupThread extends Thread
 
 				if(message.getMessage().equals("ENC")) {
 					message = decryptEnv(message);
+					System.out.println("Request received: " + message.getMessage());
 					if(message.getMessage().equals("GET"))//Client wants a token
 					{
 						String username = (String)message.getObjContents().get(0); //Get the username
-						if(username == null)
+						SessionID client = (SessionID)message.getObjContents().get(1); //Get SessionID
+						if(verifySessID(client))
 						{
-							response = new Envelope("FAIL");
-							response.addObject(null);
-							output.writeObject(encryptEnv(response));
-						}
-						else
-						{
-							StringBuilder sb = new StringBuilder("");
-							sb.append((String)message.getObjContents().get(1));
-							sb.append("#");
-							sb.append((int)message.getObjContents().get(2));
-							Token yourToken = createToken(username, sb.toString()); //Create a token
+              if(username == null) {
+							  response = new Envelope("FAIL");
+							  response.addObject(null);
+							  output.writeObject(encryptEnv(response));
+						  }
+              else
+              {
+                StringBuilder sb = new StringBuilder("");
+                sb.append((String)message.getObjContents().get(1));
+                sb.append("#");
+                sb.append((int)message.getObjContents().get(2));
+                Token yourToken = createToken(username, sb.toString()); //Create a token
 
-							//Respond to the client. On error, the client will receive a null token
-							response = new Envelope("OK");
+                //Respond to the client. On error, the client will receive a null token
+                response = new Envelope("OK");
 
-							//Generate a Signature
-							System.out.println("Group Server Signing Token...");
-							byte[] hash = yourToken.genHash();
-							//signedHash = [hash]pk;
-							Signature signer = Signature.getInstance("SHA1withRSA", "BC");
-							signer.initSign(groupPrivKey);
-							signer.update(hash);
-							//System.out.println("Hash in Token in File Server: " + new String(hash));
-							yourToken.setSignedHash(signer.sign());
-							response.addObject(yourToken.toString());
-							response.addObject(yourToken.getSignedHash());
-							response.addObject(hash);
-							output.writeObject(encryptEnv(response));
+                //Generate a Signature
+                System.out.println("Group Server Signing Token...");
+                byte[] hash = yourToken.genHash();
+                //signedHash = [hash]pk;
+                Signature signer = Signature.getInstance("SHA1withRSA", "BC");
+                signer.initSign(groupPrivKey);
+                signer.update(hash);
+                //System.out.println("Hash in Token in File Server: " + new String(hash));
+                yourToken.setSignedHash(signer.sign());
+                response.addObject(yourToken.toString());
+                response.addObject(yourToken.getSignedHash());
+                response.addObject(hash);
+                output.writeObject(encryptEnv(response));
+              }
 						}
 					}
 					else if(message.getMessage().equals("CUSER")) //Client wants to create a user
 					{
-						if(message.getObjContents().size() < 2)
+						if(message.getObjContents().size() < 3)
 						{
 							response = new Envelope("FAIL");
 						}
 						else
 						{
 							response = new Envelope("FAIL");
-
+							
 							if(message.getObjContents().get(0) != null)
 							{
 								if(message.getObjContents().get(1) != null) {
@@ -124,8 +130,8 @@ public class GroupThread extends Thread
 										String username = (String)message.getObjContents().get(0); //Extract the username
 										String password = (String)message.getObjContents().get(1);
 										Token yourToken = (Token)message.getObjContents().get(2); //Extract the token
-
-										if(checkSig(yourToken)) {
+										SessionID client = (SessionID)message.getObjContents().get(3); 
+										if(checkSig(yourToken) && verifySessID(client)) {
 											if(createUser(username,password, yourToken))
 											{
 												response = new Envelope("OK"); //Success
@@ -141,7 +147,7 @@ public class GroupThread extends Thread
 					else if(message.getMessage().equals("DUSER")) //Client wants to delete a user
 					{
 
-						if(message.getObjContents().size() < 2)
+						if(message.getObjContents().size() < 3)
 						{
 							response = new Envelope("FAIL");
 						}
@@ -155,8 +161,8 @@ public class GroupThread extends Thread
 								{
 									String username = (String)message.getObjContents().get(0); //Extract the username
 									UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
-
-									if(checkSig((Token)yourToken)) {
+									SessionID client = (SessionID)message.getObjContents().get(2); 
+									if(checkSig((Token)yourToken) && verifySessID(client)) {
 										if(deleteUser(username, yourToken))
 										{
 											response = new Envelope("OK"); //Success
@@ -171,7 +177,7 @@ public class GroupThread extends Thread
 					else if(message.getMessage().equals("CGROUP")) //Client wants to create a group
 					{
 					    /* TODO:  Write this handler */
-						if(message.getObjContents().size() < 2)
+						if(message.getObjContents().size() < 3)
 						{
 							response = new Envelope("FAIL");
 						}
@@ -185,8 +191,8 @@ public class GroupThread extends Thread
 								{
 									String group = (String)message.getObjContents().get(0); //Extract the groupname
 									UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
-
-									if(checkSig((Token)yourToken)) {
+									SessionID client = (SessionID)message.getObjContents().get(2); 
+									if(checkSig((Token)yourToken) && verifySessID(client)) {
 										if(cGroup(group, (Token)yourToken))
 										{
 											response = new Envelope("OK"); //Success
@@ -200,7 +206,7 @@ public class GroupThread extends Thread
 					else if(message.getMessage().equals("DGROUP")) //Client wants to delete a group
 					{
 					    /* TODO:  Write this handler */
-						if(message.getObjContents().size() < 2)
+						if(message.getObjContents().size() < 3)
 						{
 							response = new Envelope("FAIL");
 						}
@@ -214,8 +220,8 @@ public class GroupThread extends Thread
 								{
 									String group = (String)message.getObjContents().get(0); //Extract the groupname
 									UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
-
-									if(checkSig((Token)yourToken)) {
+									SessionID client = (SessionID)message.getObjContents().get(2); 
+									if(checkSig((Token)yourToken) && verifySessID(client)) {
 										if(deleteGroup(group, (Token)yourToken))
 										{
 											response = new Envelope("OK"); //Success
@@ -229,7 +235,7 @@ public class GroupThread extends Thread
 					else if(message.getMessage().equals("LMEMBERS")) //Client wants a list of members in a group
 					{
 					    /* TODO:  Write this handler */
-						if(message.getObjContents().size() < 2)
+						if(message.getObjContents().size() < 3)
 						{
 							response = new Envelope("FAIL");
 						}
@@ -243,7 +249,8 @@ public class GroupThread extends Thread
 								{
 									String group = (String)message.getObjContents().get(0); //Extract the groupname
 									UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
-									if(checkSig((Token)yourToken)) {
+									SessionID client = (SessionID)message.getObjContents().get(2); 
+									if(checkSig((Token)yourToken) && verifySessID(client)) {
 										if(my_gs.gList.containsKey(group))  //Group exists
 										{
 											Group g = my_gs.gList.get(group);
@@ -262,7 +269,7 @@ public class GroupThread extends Thread
 					else if(message.getMessage().equals("AUSERTOGROUP")) //Client wants to add user to a group
 					{
 					    /* TODO:  Write this handler */
-						if(message.getObjContents().size() < 3)
+						if(message.getObjContents().size() < 4)
 						{
 							response = new Envelope("FAIL");
 							//System.out.println("msg.size < 3");
@@ -274,14 +281,14 @@ public class GroupThread extends Thread
 
 							if(message.getObjContents().get(0) != null)
 							{
-								if(message.getObjContents().get(1) != null && message.getObjContents().get(2) != null)
+								if(message.getObjContents().get(1) != null && message.getObjContents().get(2) != null && message.getObjContents().get(3) != null)
 								{
 
 									String userToBeAdded = (String)message.getObjContents().get(0);
 									String group = (String) message.getObjContents().get(1); //Extract the groupname
 									Token yourToken = (Token)message.getObjContents().get(2); //Extract the token
-
-									if(checkSig((Token)yourToken)) {
+									SessionID client = (SessionID)message.getObjContents().get(3); 
+									if(checkSig((Token)yourToken) && verifySessID(client)) {
 										if(my_gs.gList.containsKey(group))  //Group exists
 										{
 											Group g = my_gs.gList.get(group);
@@ -307,7 +314,7 @@ public class GroupThread extends Thread
 					else if(message.getMessage().equals("RUSERFROMGROUP")) //Client wants to remove user from a group
 					{
 					    /* TODO:  Write this handler */
-						if(message.getObjContents().size() < 3)
+						if(message.getObjContents().size() < 4)
 						{
 							response = new Envelope("FAIL");
 						}
@@ -323,7 +330,8 @@ public class GroupThread extends Thread
 									String userToBeRemoved = (String)message.getObjContents().get(0);
 									String group = (String) message.getObjContents().get(1); //Extract the groupname
 									UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
-									if(checkSig((Token)yourToken)) {
+									SessionID client = (SessionID)message.getObjContents().get(3); 
+									if(checkSig((Token)yourToken) && verifySessID(client)) {
 										if(my_gs.gList.containsKey(group))  //Group exists
 										{
 											Group g = my_gs.gList.get(group);
@@ -348,11 +356,16 @@ public class GroupThread extends Thread
 					}
 					else if(message.getMessage().equals("DISCONNECT")) //Client wants to disconnect
 					{
+						SessionID client = (SessionID)message.getObjContents().get(0); 
 						updateUserList();
-						socket.close(); //Close the socket
-						proceed = false; //End this communication loop
+						if(saveSessID(client))
+						{
+							socket.close(); //Close the socket
+							proceed = false; //End this communication loop
+						}
 					}
 				}
+				
 				else if(message.getMessage().equals("CHECK")) //Check Password
 				{
 
@@ -486,7 +499,7 @@ public class GroupThread extends Thread
 			e.printStackTrace(System.err);
 		}
 	}
-
+	
 	private void updateUserList()
 	{
 		System.out.println("Saving Group and User list...");
@@ -497,6 +510,8 @@ public class GroupThread extends Thread
 			outStream.writeObject(my_gs.userList);
 			outStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
 			outStream.writeObject(my_gs.gList);
+			outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin")); 
+			outStream.writeObject(my_gs.unacceptedSessionIDs); 
 		}
 		catch(Exception e)
 		{
@@ -675,14 +690,34 @@ public class GroupThread extends Thread
 
 	private Envelope decryptEnv(Envelope msg)
 	{
+		boolean hashed = false;
+		if(msg.getObjContents().size() == 3) hashed = true; 
 		SealedObject sealedobj = (SealedObject)msg.getObjContents().get(0);
 		byte[] iv = (byte[])msg.getObjContents().get(1);
+		byte[] hash = null; 
+		if(hashed) hash = (byte[]) msg.getObjContents().get(2); 
+		
 		try
 		{
 			String alg = sealedobj.getAlgorithm();
 			Cipher c = Cipher.getInstance(alg);
 			c.init(Cipher.DECRYPT_MODE,sessKey,new IvParameterSpec(iv));
-			return (Envelope)sealedobj.getObject(c);
+			Envelope message = (Envelope)sealedobj.getObject(c);
+			// If message was hashed check the hash
+			if(hashed)
+			{
+				//Remove the hash key from envelope before returning. 
+				//Hash key is in the last index of object contents. 
+				Envelope newMsg = new Envelope(message.getMessage()); 
+				for(int i = 0; i < message.getObjContents().size() -1; i++)
+					newMsg.addObject(message.getObjContents().get(i)); 
+				SecretKeySpec key = (SecretKeySpec)message.getObjContents().get(message.getObjContents().size()-1); 
+				newMsg.setStringRep(message.toString()); 
+				if(verifyHash(newMsg, hash, key))
+					return newMsg;
+			}
+			else 
+				return message; 
 		}
 		catch(Exception e)
 		{
@@ -708,5 +743,83 @@ public class GroupThread extends Thread
 		}
 
 		return false;
+	}
+	private boolean verifySessID(SessionID clientID)
+	{
+		System.out.println("Verifying SessionID..."); 
+		if(my_gs.unacceptedSessionIDs != null)
+		{
+			if(my_gs.unacceptedSessionIDs.containsKey(clientID.getUserName()))
+			{
+				SessionID storedID = my_gs.unacceptedSessionIDs.get(clientID.getUserName()); 
+				storedID.nextMsg(); 
+				//System.out.println("TEST SessionID: " + clientID.toString()); 
+				//The message is in unacceptedSessionIDs meaning shouldn't be accepted. 
+				if(storedID.equals(clientID))
+					return false; 
+			}
+		}
+		//This is not the first time the client has connected to the server. 
+		if(my_gs.acceptedSessionIDs.containsKey(clientID.getUserName()))
+		{
+			//Check date is today 
+			if(!clientID.isToday())
+				return false; 
+			
+			//Get the last sessionID stored for the client 
+			SessionID storedID = my_gs.acceptedSessionIDs.get(clientID.getUserName()); 
+			storedID.nextMsg(); 
+			//System.out.println("TEST SessionID: " + clientID.toString()); 
+			//Ensure the last sessionID is one less message than the current ID. 
+			if(storedID.equals(clientID))
+			{
+				//Replace the old stored sessionID with the current sessionID. 
+				//System.out.println("SessionID: " + clientID.toString()); 
+				my_gs.acceptedSessionIDs.remove(clientID.getUserName()); 
+				my_gs.acceptedSessionIDs.put(clientID.getUserName(), clientID); 
+				return true; 
+			}
+		}
+		//This is the first time the client has connected 
+		else
+		{
+			//Store this sessionID in the list and accept it. 
+			my_gs.acceptedSessionIDs.put(clientID.getUserName(), clientID); 
+			//System.out.println("SessionID: " + clientID.toString()); 
+			return true; 
+		}
+		return false; 
+	}
+	private boolean saveSessID(SessionID clientID)
+	{
+		/* SessionID clientID = (SessionID) my_gs.sessionIDs.remove(userName); 
+		System.out.println(clientID);
+		clientID.setSession(-1); 
+		SessionID storedID = (SessionID)my_gs.sessionIDs.put(userName, clientID);
+		boolean result = storedID.equals(clientID);
+		System.out.println(result); 
+		return result;  */
+		my_gs.acceptedSessionIDs.remove(clientID.getUserName()); 
+		SessionID newClientID = new SessionID(clientID.getUserName(), clientID.getDate(), clientID.getRandNumber(), -1); 
+		my_gs.unacceptedSessionIDs.put(clientID.getUserName(), newClientID);  
+		System.out.println("clientID: " + clientID.toString()); 
+		System.out.println("newClientID: " + newClientID.toString()); 
+		return my_gs.unacceptedSessionIDs.containsKey(clientID.getUserName()); 
+	}
+	private boolean verifyHash(Envelope message, byte[] hash, SecretKeySpec key)
+	{
+		System.out.println("Verifying Hash...");
+		try{
+			Mac hmac = Mac.getInstance("Hmac-SHA256", "BC");
+			hmac.init(key); 
+			byte[] myHash = hmac.doFinal(message.toString().getBytes());
+			return (new String(myHash)).equals(new String(hash)); 
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error: " + e); 
+			e.printStackTrace(); 
+		}
+		return false; 
 	}
 }

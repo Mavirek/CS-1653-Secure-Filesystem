@@ -33,6 +33,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 private SecureRandom random = new SecureRandom();
 	 private byte[] challengeD = new byte[4];
 	 private SecretKeySpec sessKey;
+   private SessionID client = null; 
 	 private String fileServer;
 	 private int filePort;
 
@@ -43,7 +44,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 		this.fileServer = fileServer;
 		this.filePort = filePort;
 		Envelope message = null, response = null;
-
+		client = new SessionID(username); 
 		groupPubKey = (Envelope)input.readObject();
 		groupPK = (PublicKey)groupPubKey.getObjContents().get(0);
 
@@ -148,7 +149,22 @@ public class GroupClient extends Client implements GroupClientInterface {
 		return false;
 
 	 }
-
+	 public void disconnect()
+	 {
+		 try
+		 {
+			 Envelope message = new Envelope("DISCONNECT"); 
+			 message.addObject(client); 
+			 output.writeObject(encryptEnv(message)); 
+		 }
+		 catch(Exception e)
+		 {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+		 }
+		 
+		 
+	 }
 	 public UserToken getToken(String username)
 	 {
 		try
@@ -161,11 +177,12 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(username); //Add user name string
 			message.addObject(fileServer);
 			message.addObject(filePort);
+			message.addObject(client);
 			output.writeObject(encryptEnv(message));
 
 			//Get the response from the server
 			response = decryptEnv((Envelope)input.readObject());
-
+			client.nextMsg(); 
 			//Successful response
 			if(response.getMessage().equals("OK"))
 			{
@@ -205,10 +222,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(username); //Add user name string
 				message.addObject(password);
 				message.addObject(token); //Add the requester's token
+				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
-
+				client.nextMsg(); 
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -235,10 +253,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message = new Envelope("DUSER");
 				message.addObject(username); //Add user name
 				message.addObject(token);  //Add requester's token
+				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
-
+				client.nextMsg(); 
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -264,10 +283,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message = new Envelope("CGROUP");
 				message.addObject(groupname); //Add the group name string
 				message.addObject(token); //Add the requester's token
+				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
-
+				client.nextMsg(); 
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -293,9 +313,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message = new Envelope("DGROUP");
 				message.addObject(groupname); //Add group name string
 				message.addObject(token); //Add requester's token
+				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
+				client.nextMsg(); 
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -322,10 +344,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 message = new Envelope("LMEMBERS");
 			 message.addObject(group); //Add group name string
 			 message.addObject(token); //Add requester's token
+			 message.addObject(client); 
 			 output.writeObject(encryptEnv(message));
 
 			 response = decryptEnv((Envelope)input.readObject());
-
+			 client.nextMsg(); 
 			 //If server indicates success, return the member list
 			 if(response.getMessage().equals("OK"))
 			 {
@@ -355,9 +378,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(username); //Add user name string
 				message.addObject(groupname); //Add group name string
 				message.addObject(token); //Add requester's token
+				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
+				client.nextMsg(); 
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -384,9 +409,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(username); //Add user name string
 				message.addObject(groupname); //Add group name string
 				message.addObject(token); //Add requester's token
+				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
+				client.nextMsg(); 
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -412,6 +439,11 @@ public class GroupClient extends Client implements GroupClientInterface {
  	{
  		try
  		{
+			// Generate Hmac hash 
+			SecretKeySpec key = genKey(); 
+			byte[] hash = genHash(msg.toString(), key);
+			msg.addObject(key); //Add key used for hmac hash gen. 
+			// Encrypt original Envelope
  			Cipher c = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
  			SecureRandom rand = new SecureRandom();
  			byte[] iv = new byte[16];
@@ -421,6 +453,7 @@ public class GroupClient extends Client implements GroupClientInterface {
  			Envelope encryptedMsg = new Envelope("ENC");
  			encryptedMsg.addObject(sealedobj);
  			encryptedMsg.addObject(iv);
+			encryptedMsg.addObject(hash); 
  			return encryptedMsg;
  		}
  		catch(Exception e)
@@ -449,4 +482,25 @@ public class GroupClient extends Client implements GroupClientInterface {
  		}
  		return null;
  	}
+	public byte[] genHash(String message, SecretKeySpec key)
+	{
+		try{
+			Mac hmac = Mac.getInstance("Hmac-SHA256", "BC");
+			hmac.init(key); 
+			return hmac.doFinal(message.getBytes());
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error: " + e); 
+			e.printStackTrace(); 
+		}
+		return null; 
+	}
+	public SecretKeySpec genKey()
+	{
+		SecureRandom random = new SecureRandom();
+		byte[] keyBytes = new byte[16];
+		random.nextBytes(keyBytes);
+		return new SecretKeySpec(keyBytes, "AES");
+	}
 }
