@@ -397,11 +397,11 @@ public class FileClient extends Client implements FileClientInterface {
 			 
 			Cipher ciph = Cipher.getInstance("AES/CTR/NoPadding", "BC");
 			byte[] iv = Arrays.copyOf(group.getBytes(),16);
-			System.out.println("upload iv = "+new String(iv));
+			//System.out.println("upload iv = "+new String(iv));
 			//get the most recent key for that group
 			SecretKey key = groupKeys.get(groupKeys.size()-1);
-			System.out.println("upload key = "+key);
-			System.out.println("encrypting with keynum "+(groupKeys.size()-1));
+			//System.out.println("upload key = "+key);
+			//System.out.println("encrypting with keynum "+(groupKeys.size()-1));
 			 do {
 				 byte[] buf = new byte[4096];
 				 	if (env.getMessage().compareTo("READY")!=0) {

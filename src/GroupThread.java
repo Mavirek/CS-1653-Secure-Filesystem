@@ -139,6 +139,20 @@ public class GroupThread extends Thread
 								if(deleteUser(username, yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									for(String group : yourToken.getGroups())
+									{
+										try
+										{
+											KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+											keyGen.init(128);
+											SecretKey key = keyGen.generateKey();
+											my_gs.gk.addKey(group,key);
+										}
+										catch(Exception ge)
+										{
+											System.out.println("Error generating new group key after removing user from group");
+										}
+									}
 								}
 							}
 						}
@@ -167,6 +181,17 @@ public class GroupThread extends Thread
 								if(cGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									try
+									{
+										KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+										keyGen.init(128);
+										SecretKey key = keyGen.generateKey();
+										my_gs.gk.addGroup(group,key);
+									}
+									catch(Exception ge)
+									{
+										System.out.println("Error generating new group key after removing user from group");
+									}
 								}
 							}
 						}
@@ -194,6 +219,7 @@ public class GroupThread extends Thread
 								if(deleteGroup(group, (Token)yourToken))
 								{
 									response = new Envelope("OK"); //Success
+									my_gs.gk.removeGroup(group);
 								}
 							}
 						}
