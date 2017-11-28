@@ -16,6 +16,7 @@ public class FileServer extends Server {
 
 	public static final int SERVER_PORT = 4321;
 	public static FileList fileList;
+
 	public static Hashtable<String, SessionID> acceptedSessionIDs;
 	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
   
@@ -86,6 +87,8 @@ public class FileServer extends Server {
 			System.out.println("Error reading from FileList file");
 			System.exit(-1);
 		}
+
+		
 		File file = new File("shared_files");
 		 if (file.mkdir()) {
 			 System.out.println("Created new shared_files directory");

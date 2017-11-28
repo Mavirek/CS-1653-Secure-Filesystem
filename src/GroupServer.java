@@ -13,7 +13,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
 import java.util.*;
-
+import java.security.*;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import java.security.KeyPairGenerator;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.SecretKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 
 public class GroupServer extends Server {
@@ -22,6 +28,9 @@ public class GroupServer extends Server {
 	public UserList userList;
 	public Hashtable<String, Group> gList = new Hashtable<String, Group>();
 	private EncryptDecrypt ed = new EncryptDecrypt();
+	//gk<String groupName, ArrayList<SecretKey> gkList>
+	public GroupKeys gk;
+	
 	public static Hashtable<String, SessionID> acceptedSessionIDs;
 	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
 	public GroupServer() {
@@ -35,12 +44,16 @@ public class GroupServer extends Server {
 	public void start() {
 		// Overwrote server.start() because if no user file exists, initial admin account needs to be created
 
+		Security.addProvider(new BouncyCastleProvider());
 		String userFile = "UserList.bin";
 		String groupFile = "GroupList.bin";
-		String sessFile = "SessionIDGS.bin";
+		String gkFile = "GroupKeysList.bin";
+    String sessFile = "SessionIDGS.bin";
 		Scanner console = new Scanner(System.in);
 		ObjectInputStream userStream;
 		ObjectInputStream groupStream;
+		ObjectInputStream gkStream;
+    
 		String username = "";
 		String password = "";
 		byte[] hashPass;
@@ -56,6 +69,9 @@ public class GroupServer extends Server {
 			FileInputStream fis = new FileInputStream(userFile);
 			userStream = new ObjectInputStream(fis);
 			userList = (UserList)userStream.readObject();
+			FileInputStream gkfis = new FileInputStream(gkFile);
+			gkStream = new ObjectInputStream(gkfis);
+			gk = (GroupKeys)gkStream.readObject();
 		}
 		catch(FileNotFoundException e)
 		{
@@ -84,6 +100,21 @@ public class GroupServer extends Server {
 			userList.setPassword(username, storePass);
 			userList.addGroup(username, "ADMIN");
 			userList.addOwnership(username, "ADMIN");
+			System.out.println("GroupKeysList file does not exist. Creating GroupsKeysList...");
+			gk = new GroupKeys();
+			try
+			{
+				KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+				keyGen.init(128);
+				SecretKey key = keyGen.generateKey();
+				gk.addGroup("ADMIN",key);
+			}
+			catch(Exception ge)
+			{
+				System.out.println("Error creating the group's file key");
+				System.exit(-1);
+			}
+			
 		}
 		catch(IOException e)
 		{
@@ -195,6 +226,8 @@ class ShutDownListener extends Thread
 			outStream.writeObject(my_gs.userList);
 			outStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
 			outStream.writeObject(my_gs.gList);
+			outStream = new ObjectOutputStream(new FileOutputStream("GroupKeysList.bin"));
+			outStream.writeObject(my_gs.gk);
 			outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin")); 
 			outStream.writeObject(my_gs.unacceptedSessionIDs); 
 		}
@@ -221,7 +254,7 @@ class AutoSave extends Thread
 			try
 			{
 				Thread.sleep(300000); //Save group and user lists every 5 minutes
-				System.out.println("Autosave group and user lists...");
+				System.out.println("Autosave group, user, and groupkey lists...");
 				ObjectOutputStream outStream;
 				try
 				{
@@ -229,6 +262,10 @@ class AutoSave extends Thread
 					outStream.writeObject(my_gs.userList);
 					outStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
 					outStream.writeObject(my_gs.gList);
+					outStream = new ObjectOutputStream(new FileOutputStream("GroupKeysList.bin"));
+					outStream.writeObject(my_gs.gk);
+          outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin")); 
+			    outStream.writeObject(my_gs.unacceptedSessionIDs);
 				}
 				catch(Exception e)
 				{

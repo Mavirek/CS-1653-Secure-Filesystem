@@ -17,6 +17,7 @@ public class Token implements UserToken, java.io.Serializable{
 	private boolean signed = false;
 	private byte[] hash;
 	private String fileServer;
+
 	public Token()
 	{
 		issuer = "Group";
@@ -57,6 +58,7 @@ public class Token implements UserToken, java.io.Serializable{
 		subject = user;
 		groups = g;
 		this.fileServer = fileServer;
+
 	}
 	public String getIssuer(){
 		return issuer;
@@ -89,7 +91,6 @@ public class Token implements UserToken, java.io.Serializable{
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
-
 		builder.append(subject);
 		builder.append(":");
 		builder.append(issuer);
@@ -149,6 +150,7 @@ public class Token implements UserToken, java.io.Serializable{
 	public boolean isSigned()
 	{
 		return signed;
+
 	}
 	public byte[] getSignedHash()
 	{

@@ -38,7 +38,6 @@ public class EncryptDecrypt {
     catch(Exception e) {
       System.out.println(e);
     }
-
   	 return md.digest();
   }
 

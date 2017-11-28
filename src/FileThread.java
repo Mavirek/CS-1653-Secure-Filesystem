@@ -45,7 +45,7 @@ public class FileThread extends Thread
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
 	}
-
+	
 	public void run()
 	{
 		Security.addProvider(new BouncyCastleProvider());
@@ -94,9 +94,11 @@ public class FileThread extends Thread
 					//signed file server DH public key
 					byte[] signedFDHPK = signer.sign();
 					message.addObject(signedFDHPK);
+
 					//message.addObject(fileDHPK);
 
 					message.addObject(filePair.getPublic());//Send this to verify.
+
 					output.writeObject(message); //send file server public key
 
 					response = (Envelope)input.readObject(); //receive client public key
@@ -112,7 +114,6 @@ public class FileThread extends Thread
 					{
 						response = new Envelope("MATCH");
 						output.writeObject(response);
-
 						Envelope msg = (Envelope)input.readObject();
 
 						BigInteger challenge =(BigInteger)msg.getObjContents().get(0);
@@ -122,9 +123,9 @@ public class FileThread extends Thread
 						ciph.init(Cipher.ENCRYPT_MODE,sessKey,new IvParameterSpec(iv));
 						//System.out.println("server iv = "+new String(iv));
 						challenge = challenge.add(BigInteger.ONE);
-
 						byte[] cipherText = ciph.doFinal(challenge.toByteArray());
 						response = new Envelope("CHECK CHALL");
+
 						response.addObject(cipherText);
 					}
 					else
@@ -229,6 +230,7 @@ public class FileThread extends Thread
 									response = new Envelope("FAIL-BADTOKEN");
 								}
 								if(e.getObjContents().get(3) == null) {
+
 									response = new Envelope("FAIL-BADSESSIONID");
 								}
 								else {
@@ -236,6 +238,8 @@ public class FileThread extends Thread
 									String group = (String)e.getObjContents().get(1);
 									UserToken yourToken = (UserToken)e.getObjContents().get(2); //Extract token
 									SessionID client = (SessionID)e.getObjContents().get(3);
+
+									int keyNum = (Integer)e.getObjContents().get(4);
 									if(verifySessID(client))
 									{
 										if (FileServer.fileList.checkFile(remotePath)) {
@@ -265,7 +269,7 @@ public class FileThread extends Thread
 
 											if(e.getMessage().compareTo("EOF")==0) {
 												System.out.printf("Transfer successful file %s\n", remotePath);
-												FileServer.fileList.addFile(yourToken.getSubject(), group, remotePath);
+												FileServer.fileList.addFile(yourToken.getSubject(), group, remotePath, keyNum);
 												response = new Envelope("OK"); //Success
 											}
 											else {
@@ -286,6 +290,7 @@ public class FileThread extends Thread
 							String remotePath = (String)e.getObjContents().get(0);
 							Token t = (Token)e.getObjContents().get(1);
 							SessionID client = (SessionID)e.getObjContents().get(2);
+
 							if(verifySessID(client))
 							{
 								ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
@@ -312,8 +317,16 @@ public class FileThread extends Thread
 
 										}
 										else {
-											FileInputStream fis = new FileInputStream(f);
 
+											e = new Envelope("KEYNUMGROUP");
+											e.addObject(sf.getKeyNum());
+											e.addObject(sf.getGroup());
+											output.writeObject(encryptEnv(e,sessKey));
+											
+											e = decryptEnv((Envelope)input.readObject(),sessKey);
+											FileInputStream fis = new FileInputStream(f);
+											//System.out.println("decrypted response");
+											//System.out.println("e = "+e.getMessage());
 											do {
 												byte[] buf = new byte[4096];
 												if (e.getMessage().compareTo("DOWNLOADF")!=0) {
@@ -329,8 +342,75 @@ public class FileThread extends Thread
 
 												}
 
-
+												//System.out.println("chunk = "+new String(buf));
+												//System.out.println("n = "+n);
 												e.addObject(buf);
+												e.addObject(new Integer(n));
+
+												output.writeObject(encryptEnv(e,sessKey));
+												//System.out.println("sent CHUNK");
+												e = decryptEnv((Envelope)input.readObject(),sessKey);
+												
+
+											}
+											while (fis.available()>0);
+											//System.out.println("e mesg = "+e.getMessage());
+											//If server indicates success, return the member list
+											if(e.getMessage().compareTo("DOWNLOADF")==0)
+											{
+
+												e = new Envelope("EOF");
+												output.writeObject(encryptEnv(e,sessKey));
+
+												e = decryptEnv((Envelope)input.readObject(),sessKey);
+												if(e.getMessage().compareTo("OK")==0) {
+													System.out.printf("File data upload successful\n");
+												}
+												else {
+
+													System.out.printf("Download failed: %s\n", e.getMessage());
+
+												}
+
+											}
+											else {
+
+												System.out.printf("Download failed: %s\n", e.getMessage());
+
+											}
+											fis.close(); 
+										}
+									}
+									catch(Exception e1)
+									{
+										System.err.println("Error: " + e.getMessage());
+										e1.printStackTrace(System.err);
+
+									}
+								}
+							}
+						}
+						else if (e.getMessage().compareTo("DELETEF")==0) {
+
+							String remotePath = (String)e.getObjContents().get(0);
+							Token t = (Token)e.getObjContents().get(1);
+							SessionID client = (SessionID)e.getObjContents().get(2); 
+							if(verifySessID(client))
+							{
+								ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
+								if (sf == null) {
+									System.out.printf("Error: File %s doesn't exist\n", remotePath);
+									e = new Envelope("ERROR_DOESNTEXIST");
+								}
+								else if (!t.getGroups().contains(sf.getGroup())){
+									System.out.printf("Error user %s doesn't have permission\n", t.getSubject());
+									e = new Envelope("ERROR_PERMISSION");
+								}
+								else {
+
+
+
+											/**	e.addObject(buf);
 												e.addObject(new Integer(n));
 
 												output.writeObject(encryptEnv(e,sessKey));
@@ -392,7 +472,7 @@ public class FileThread extends Thread
 									System.out.printf("Error user %s doesn't have permission\n", t.getSubject());
 									e = new Envelope("ERROR_PERMISSION");
 								}
-								else {
+								else {**/
 
 									try
 									{
@@ -428,6 +508,7 @@ public class FileThread extends Thread
 								e = new Envelope("ERROR_SESSIONID");
 							output.writeObject(encryptEnv(e,sessKey));
 						}	
+
 						else if(e.getMessage().equals("DISCONNECT"))
 						{
 							SessionID client = (SessionID)e.getObjContents().get(0); 
@@ -442,6 +523,7 @@ public class FileThread extends Thread
 
 				}
 				
+
 			} while(proceed);
 		}
 		catch(Exception e)
@@ -505,6 +587,7 @@ public class FileThread extends Thread
 			}
 			else
 				return message;
+
 		}
 		catch(Exception e)
 		{
@@ -516,6 +599,7 @@ public class FileThread extends Thread
 	private boolean verifySessID(SessionID clientID)
 	{
 		System.out.println("Verifying SessionID..."); 
+
 		//This is not the first time the client has connected to the server.
 		//System.out.println("FileServer.sessionIDs.contains(clientID.getUserName()): " + FileServer.sessionIDs.containsKey(clientID.getUserName())); 
 		if(FileServer.unacceptedSessionIDs != null)
@@ -542,6 +626,7 @@ public class FileThread extends Thread
 			
 			//Get the last sessionID stored for the client 
 			SessionID storedID = FileServer.acceptedSessionIDs.get(clientID.getUserName()); 
+
 			storedID.nextMsg(); 
 			//System.out.println("TEST SessionID: " + clientID.toString()); 
 			//Ensure the last sessionID is one less message than the current ID. 

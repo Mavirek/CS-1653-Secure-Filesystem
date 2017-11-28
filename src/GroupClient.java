@@ -13,6 +13,7 @@ import org.bouncycastle.util.encoders.Hex;
 import javax.crypto.Mac;
 import java.security.*;
 import javax.crypto.*;
+
 import java.math.*;
 import org.bouncycastle.crypto.agreement.srp.SRP6Client;
 import org.bouncycastle.crypto.agreement.srp.SRP6Server;
@@ -24,6 +25,7 @@ import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
+
 
 public class GroupClient extends Client implements GroupClientInterface {
      // Get group server's public key
@@ -65,7 +67,6 @@ public class GroupClient extends Client implements GroupClientInterface {
 		catch(Exception e) {
 			System.out.println(e);
 		}
-
 		message.addObject(encryptedUser);  //Enc username
 		message.addObject(encryptedPassHash);  //Enc password hash
 		output.writeObject(message);
@@ -165,6 +166,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 		 
 		 
 	 }
+
 	 public UserToken getToken(String username)
 	 {
 		try
@@ -183,6 +185,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			//Get the response from the server
 			response = decryptEnv((Envelope)input.readObject());
 			client.nextMsg(); 
+
 			//Successful response
 			if(response.getMessage().equals("OK"))
 			{
@@ -193,9 +196,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				if(temp.size() == 3)
 				{
 					String t = (String)temp.get(0);
+
 					byte[] signedHash = (byte[])temp.get(1);
 					byte[] hash = (byte[])temp.get(2);
 					token = new Token(t, signedHash, hash);
+
 					System.out.println("Token Created");
 					return token;
 				}
@@ -227,6 +232,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 				response = decryptEnv((Envelope)input.readObject());
 				client.nextMsg(); 
+
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -253,11 +259,13 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message = new Envelope("DUSER");
 				message.addObject(username); //Add user name
 				message.addObject(token);  //Add requester's token
+
 				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
 				client.nextMsg(); 
+
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -283,11 +291,13 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message = new Envelope("CGROUP");
 				message.addObject(groupname); //Add the group name string
 				message.addObject(token); //Add the requester's token
+
 				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
 				client.nextMsg(); 
+
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -313,11 +323,13 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message = new Envelope("DGROUP");
 				message.addObject(groupname); //Add group name string
 				message.addObject(token); //Add requester's token
+
 				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
 				client.nextMsg(); 
+
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -344,11 +356,13 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 message = new Envelope("LMEMBERS");
 			 message.addObject(group); //Add group name string
 			 message.addObject(token); //Add requester's token
+
 			 message.addObject(client); 
 			 output.writeObject(encryptEnv(message));
 
 			 response = decryptEnv((Envelope)input.readObject());
 			 client.nextMsg(); 
+
 			 //If server indicates success, return the member list
 			 if(response.getMessage().equals("OK"))
 			 {
@@ -378,11 +392,13 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(username); //Add user name string
 				message.addObject(groupname); //Add group name string
 				message.addObject(token); //Add requester's token
+
 				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
 				client.nextMsg(); 
+
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -409,11 +425,13 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(username); //Add user name string
 				message.addObject(groupname); //Add group name string
 				message.addObject(token); //Add requester's token
+
 				message.addObject(client); 
 				output.writeObject(encryptEnv(message));
 
 				response = decryptEnv((Envelope)input.readObject());
 				client.nextMsg(); 
+
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 				{
@@ -429,10 +447,34 @@ public class GroupClient extends Client implements GroupClientInterface {
 				return false;
 			}
 	 }
-
+	 @SuppressWarnings("unchecked")
 	 public PublicKey getGroupPubKey()
 	 {
-		 return groupPK;
+		 return groupPK; 
+	 }
+	 @SuppressWarnings("unchecked")
+	 public Hashtable<String, ArrayList<SecretKey>> getFileKeys(UserToken token)
+	 {
+		try
+		{
+			Envelope message = null, response = null;
+			message = new Envelope("GETFILEKEYS");
+			message.addObject(token);
+			output.writeObject(message);
+			
+			response = (Envelope)input.readObject();
+			if(response.getMessage().equals("OK"))
+			{
+				return (Hashtable<String, ArrayList<SecretKey>>)response.getObjContents().get(0);
+			}
+			return null;
+		}
+		catch(Exception e)
+		{
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return null;
+		}
 	 }
 
 	 private Envelope encryptEnv(Envelope msg)
