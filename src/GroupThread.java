@@ -26,7 +26,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SealedObject;
 import javax.crypto.*;
 
-
 public class GroupThread extends Thread
 {
 	private final Socket socket;
@@ -60,6 +59,7 @@ public class GroupThread extends Thread
 			KeyPair kp = kpg.generateKeyPair();
 			PrivateKey groupPrivKey = kp.getPrivate();
 			groupPubKey = kp.getPublic();
+
 			//System.out.println("GS pub key : " + groupPubKey);
 			Envelope pubKey = new Envelope("GROUP PUB KEY");
 			pubKey.addObject(groupPubKey);
@@ -70,6 +70,7 @@ public class GroupThread extends Thread
 				Envelope message = (Envelope)input.readObject();
 				System.out.println("Request received: " + message.getMessage());
 				Envelope response;
+
 
 				if(message.getMessage().equals("ENC")) {
 					message = decryptEnv(message);
@@ -144,6 +145,7 @@ public class GroupThread extends Thread
 
 						output.writeObject(encryptEnv(response));
 					}
+
 					else if(message.getMessage().equals("DUSER")) //Client wants to delete a user
 					{
 
@@ -162,15 +164,29 @@ public class GroupThread extends Thread
 									String username = (String)message.getObjContents().get(0); //Extract the username
 									UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 									SessionID client = (SessionID)message.getObjContents().get(2);
-									if(checkSig((Token)yourToken) && verifySessID(client)) {
+									if(checkSig((Token)yourToken) && verifySessID(client)) 
+                  {
 										if(deleteUser(username, yourToken))
 										{
 											response = new Envelope("OK"); //Success
-										}
-									}
-								}
-							}
-						}
+                      for(String group : yourToken.getGroups())
+                      {
+                        try
+                        {
+                          KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+                          keyGen.init(128);
+                          SecretKey key = keyGen.generateKey();
+                          my_gs.gk.addKey(group,key);
+                        }
+                        catch(Exception ge)
+                        {
+                          System.out.println("Error generating new group key after removing user from group");
+                        }
+									    }
+								    }
+							    }
+						    }
+              }
 
 						output.writeObject(encryptEnv(response));
 					}
@@ -187,6 +203,7 @@ public class GroupThread extends Thread
 
 							if(message.getObjContents().get(0) != null)
 							{
+
 								if(message.getObjContents().get(1) != null)
 								{
 									String group = (String)message.getObjContents().get(0); //Extract the groupname
@@ -196,6 +213,17 @@ public class GroupThread extends Thread
 										if(cGroup(group, (Token)yourToken))
 										{
 											response = new Envelope("OK"); //Success
+                      try
+                      {
+                        KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+                        keyGen.init(128);
+                        SecretKey key = keyGen.generateKey();
+                        my_gs.gk.addGroup(group,key);
+                      }
+                      catch(Exception ge)
+                      {
+                        System.out.println("Error generating new group key after removing user from group");
+                       }
 										}
 									}
 								}
@@ -225,6 +253,7 @@ public class GroupThread extends Thread
 										if(deleteGroup(group, (Token)yourToken))
 										{
 											response = new Envelope("OK"); //Success
+                      my_gs.gk.removeGroup(group);
 										}
 									}
 								}
@@ -282,6 +311,7 @@ public class GroupThread extends Thread
 							if(message.getObjContents().get(0) != null)
 							{
 								if(message.getObjContents().get(1) != null && message.getObjContents().get(2) != null && message.getObjContents().get(3) != null)
+
 								{
 
 									String userToBeAdded = (String)message.getObjContents().get(0);
@@ -315,6 +345,7 @@ public class GroupThread extends Thread
 					{
 					    /* TODO:  Write this handler */
 						if(message.getObjContents().size() < 4)
+
 						{
 							response = new Envelope("FAIL");
 						}
@@ -344,6 +375,17 @@ public class GroupThread extends Thread
 														my_gs.gList.get(group).removeUser(userToBeRemoved);
 														my_gs.userList.removeGroup(userToBeRemoved, group);
 														response = new Envelope("OK"); //Success
+                            try
+                            {
+                              KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+                              keyGen.init(128);
+                              SecretKey key = keyGen.generateKey();
+                              my_gs.gk.addKey(group,key);
+                            }
+                            catch(Exception ge)
+                            {
+                              System.out.println("Error generating new group key after removing user from group");
+                            }
 													}
 												}
 											}
@@ -364,11 +406,47 @@ public class GroupThread extends Thread
 							proceed = false; //End this communication loop
 						}
 					}
+					output.writeObject(response);
 				}
+				else if(message.getMessage().equals("GETFILEKEYS")) //Retrieve corresponding file server file keys for a user
+				{
+					if(message.getObjContents().size() < 1)
+					{
+						response = new Envelope("FAIL");
+					}
+					else
+					{
+						response = new Envelope("FAIL");
 
+						if(message.getObjContents().get(0) != null)
+						{
+							UserToken yourToken = (UserToken)message.getObjContents().get(0); //Extract the token
+							Hashtable<String, ArrayList<SecretKey>> keyList = new Hashtable<String, ArrayList<SecretKey>>();
+							for(String group : yourToken.getGroups())
+							{
+								System.out.println("adding keys for group: "+group);
+								keyList.put(group, my_gs.gk.getKeys(group));
+							}
+							response = new Envelope("OK");
+							response.addObject(keyList);
+						}
+					}
+					output.writeObject(response);
+				}
+				else if(message.getMessage().equals("DISCONNECT")) //Client wants to disconnect
+				{
+					updateUserList();
+					socket.close(); //Close the socket
+					proceed = false; //End this communication loop
+				}
 				else if(message.getMessage().equals("CHECK")) //Check Password
 				{
-
+					//decrypt envelope
+					//String[] toDecrypt = new String[2];
+					//toDecrypt[0] = (String)message.getObjContents().get(0);
+					//toDecrypt[1] = (String)message.getObjContents().get(1);
+					//System.out.println("MAKES IT HERE!!");
+					//System.out.println("private : " + groupPrivKey);
 					byte[] encryptedUser = (byte[])message.getObjContents().get(0);
 					byte[] encryptedPassHash = (byte[])message.getObjContents().get(1);
 					byte[] decryptedUser=null;
@@ -466,6 +544,7 @@ public class GroupThread extends Thread
 					  	//BigInteger serverS = server.calculateSecret(A);
 							//System.out.println("Server Secret : " + serverS);
 						}
+
 						else
 						{
 							response = new Envelope("USER UNAUTHORIZED");
@@ -502,7 +581,8 @@ public class GroupThread extends Thread
 
 	private void updateUserList()
 	{
-		System.out.println("Saving Group and User list...");
+
+		System.out.println("Saving Group, User, and GroupKeys lists...");
 		ObjectOutputStream outStream;
 		try
 		{
@@ -510,6 +590,8 @@ public class GroupThread extends Thread
 			outStream.writeObject(my_gs.userList);
 			outStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
 			outStream.writeObject(my_gs.gList);
+			outStream = new ObjectOutputStream(new FileOutputStream("GroupKeysList.bin"));
+			outStream.writeObject(my_gs.gk);
 			outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin"));
 			outStream.writeObject(my_gs.unacceptedSessionIDs);
 		}
@@ -645,6 +727,17 @@ public class GroupThread extends Thread
 			user.addGroup(groupName);
 			my_gs.userList.addGroup(user.getSubject(), groupName);
 			my_gs.userList.addOwnership(user.getSubject(), groupName);
+			try
+			{
+				KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+				keyGen.init(128);
+				SecretKey key = keyGen.generateKey();
+				my_gs.gk.addGroup(groupName,key);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Error creating new key for group created");
+			}
 			return true;
 		}
 		return false;
@@ -660,6 +753,7 @@ public class GroupThread extends Thread
 				my_gs.userList.removeGroup(userName, groupName);
 			}
 			my_gs.userList.removeOwnership(user.getSubject(), groupName);
+			my_gs.gk.removeGroup(groupName);
 			return true;
 		}
 		return false;

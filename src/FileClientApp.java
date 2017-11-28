@@ -1,8 +1,10 @@
 import java.io.*;
 import java.util.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import java.security.*;
+import java.security.*; 
+import javax.crypto.SecretKey;
 import java.net.*;
+
 public class FileClientApp
 {
 	protected static Token userToken = null;
@@ -13,12 +15,15 @@ public class FileClientApp
 			System.err.println("Usage: java FileClientApp <Username> <Password> <Group Server Name> <File Server Name> <Group Port> <File Port>\n");
 			System.exit(-1);
 		}
+
+		Hashtable<String, ArrayList<SecretKey>> keysList = null;
 		System.out.println("FIle Server IP : " + InetAddress.getByName(args[3]));
 		//System.out.println("FIle Server IP4 : " + new Inet4Address().getHostAddress());
 		PublicKey groupPubKey = null;
 		FileClient fc = new FileClient();
 		GroupClient gc = new GroupClient();
 		Scanner sc = new Scanner(System.in);
+
 		int z = 0;
 		do{
 			System.out.println("Please Select an Option");
@@ -34,6 +39,7 @@ public class FileClientApp
 						System.out.println("Connected to Group Server: "+args[2]+" Port: "+args[4]);
 						//Get the groups public key to use for file server signature verification
 						groupPubKey = gc.getGroupPubKey();
+
 						int x = 0;
 						do{
 							System.out.println();
@@ -52,7 +58,9 @@ public class FileClientApp
 							switch(x)
 							{
 								case 1:
+
 								//Get Token
+
 									userToken = (Token) gc.getToken(args[0]);
 									if(userToken==null)
 									{
@@ -129,6 +137,7 @@ public class FileClientApp
 									break;
 								case 5:
 								//Delete Group
+
 									if(userToken != null)
 									{
 										System.out.println("Group Name:");
@@ -212,8 +221,15 @@ public class FileClientApp
 										System.out.println("Please Select Option 1 to Get Token First");
 									break;
 								case 9:
-								//Disconnect
+
+								//Disconnect 
 									userToken = (Token) gc.getToken(args[0]);
+									
+									keysList = gc.getFileKeys(userToken);
+									if(keysList.size()>0)
+										System.out.println("Retrieved user's file keys");
+									else
+										System.out.println("Unable to retrieve user's file keys");
 									gc.disconnect();
 									System.out.println("Disconnected From Group Server");
 									break;
@@ -238,6 +254,7 @@ public class FileClientApp
 						break;
 					}
 					System.out.println(userToken.toString());
+
 					if(fc.connect(args[3],Integer.parseInt(args[5]),args[0],args[1]))
 					{
 						Token t = userToken;
@@ -272,7 +289,8 @@ public class FileClientApp
 									String sf = s.nextLine();
 									System.out.println("Please enter the Destination File: ");
 									String df = s.nextLine();
-									if(fc.download(sf, df, t, groupPubKey))
+
+									if(fc.download(sf, df, t, groupPubKey, keysList))
 									{
 										System.out.println("File successfully downloaded");
 									}
@@ -299,7 +317,7 @@ public class FileClientApp
 									System.out.println("Please enter the Destination File: ");
 									String dtf = s.nextLine();
 									System.out.println("Please enter the Group Name: ");
-									if(fc.upload(scf, dtf, s.nextLine(), t, groupPubKey))
+									if(fc.upload(scf, dtf, s.nextLine(), t, groupPubKey, keysList))
 									{
 										System.out.println("File successfully uploaded");
 									}
@@ -310,6 +328,7 @@ public class FileClientApp
 									break;
 								case 5:
 									fc.disconnect();
+									keysList = null;
 									System.out.println("Disconnected From File Server");
 									break;
 								default:

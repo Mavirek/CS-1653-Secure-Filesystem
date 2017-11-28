@@ -16,6 +16,7 @@ public class FileServer extends Server {
 
 	public static final int SERVER_PORT = 4321;
 	public static FileList fileList;
+
 	public static Hashtable<String, SessionID> acceptedSessionIDs;
 	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
   
@@ -84,6 +85,30 @@ public class FileServer extends Server {
 		catch(ClassNotFoundException e)
 		{
 			System.out.println("Error reading from FileList file");
+			System.exit(-1);
+		}
+
+		//Open Session file to get SessionIDs Hashtable
+		try
+		{
+			//Read SessionIDs.bin
+			FileInputStream fis = new FileInputStream(sessFile); 
+			fileStream = new ObjectInputStream(fis);
+			sessionIDs = (Hashtable<String, SessionID>)fileStream.readObject(); 
+		}
+		catch(FileNotFoundException e)
+		{
+			System.out.println("SessionIDs Does Not Exist. Creating SessionIDs...");
+			sessionIDs = new Hashtable<String, SessionID>(); 
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error reading from SessionID file");
+			System.exit(-1);
+		}
+		catch(ClassNotFoundException e)
+		{
+			System.out.println("Error reading from SessionID file");
 			System.exit(-1);
 		}
 		File file = new File("shared_files");
