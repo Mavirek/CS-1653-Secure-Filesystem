@@ -56,14 +56,12 @@ public class FileThread extends Thread
 			final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 			final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
 			Envelope response, message=null;
-			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
-			kpg.initialize(2048);
-			KeyPair kp = kpg.generateKeyPair();
-			PrivateKey filePrivKey = kp.getPrivate();
-			PublicKey filePubKey = kp.getPublic();
+			
 			//System.out.println("FS pub key : " + filePubKey);
+			//MessageDigest digest = MessageDigest.getInstance("SHA256");
 			Envelope pubKey = new Envelope("FILE PUB KEY");
-			pubKey.addObject(filePubKey);
+			pubKey.addObject(FileServer.filePubKey);
+			//pubKey.addObject(digest); 
 			output.writeObject(pubKey);
 
 			do
@@ -88,7 +86,7 @@ public class FileThread extends Thread
 					//sign FPK before sending
 
 					Signature signer = Signature.getInstance("SHA256withRSA", "BC");
-					signer.initSign(filePrivKey); //sign with file server RSA priv key
+					signer.initSign(FileServer.filePrivKey); //sign with file server RSA priv key
 					byte[] fileDHPK = filePair.getPublic().getEncoded();
 					signer.update(fileDHPK);
 					//signed file server DH public key

@@ -11,10 +11,18 @@ public class RunFileServer {
 			catch (NumberFormatException e) {
 				System.out.printf("Enter a valid port number or pass no arguments to use the default port (%d)\n", FileServer.SERVER_PORT);
 			}
+			catch (Exception e) {
+				System.out.println("Error ");
+			}
 		}
 		else {
 			FileServer server = new FileServer();
-			server.start();
+			try{
+				server.start();
+				}
+			catch (Exception e) {
+				System.out.println("Error ");
+			}
 		}
 	}
 

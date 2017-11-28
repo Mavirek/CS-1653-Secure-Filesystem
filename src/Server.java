@@ -4,7 +4,7 @@ public abstract class Server {
 	
 	protected int port;
 	public String name;
-	abstract void start();
+	abstract void start() throws Exception;
 	
 	public Server(int _SERVER_PORT, String _serverName) {
 		port = _SERVER_PORT;

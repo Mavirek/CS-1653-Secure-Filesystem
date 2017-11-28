@@ -49,10 +49,11 @@ public class FileClient extends Client implements FileClientInterface {
 
 		try{
 			//receive file server pub key, then decrypt signature from file server
-			System.out.println("HEREEEEEEE");
+			//System.out.println("HEREEEEEEE");
 			response = (Envelope)input.readObject();
 			//file server RSA public key
 			PublicKey fileRSAPK = (PublicKey)response.getObjContents().get(0);
+			//MessageDigest digest = (MessageDigest) response.getObjContents().get(1); 
 			Scanner s = new Scanner(System.in);
 			//receive file server DH public key
 			filePubKey = (Envelope)input.readObject();
@@ -62,6 +63,7 @@ public class FileClient extends Client implements FileClientInterface {
 			byte[] fileDHPKsignature = (byte[])filePubKey.getObjContents().get(0);
 
 			filePK=(PublicKey)filePubKey.getObjContents().get(1);
+			//MessageDigest digest = (MessageDigest)filePubKey.getObjContents().get(2); 
 			byte[] fileDHPK = filePK.getEncoded(); //new byte[2048];//dec.doFinal(fileDHPKsignature);
 			Signature signer = Signature.getInstance("SHA256withRSA");
 			signer.initVerify(fileRSAPK);
@@ -78,8 +80,8 @@ public class FileClient extends Client implements FileClientInterface {
 				System.out.println("filePK is null");
 			*/
 			MessageDigest digest = MessageDigest.getInstance("SHA256");
-			digest.reset();
-			digest.update(filePK.toString().getBytes());
+			//digest.reset();
+			digest.update(fileRSAPK.toString().getBytes());
 			fingerprint = ed.bytesToHex(digest.digest());
 			System.out.println("File server fingerprint: "+fingerprint);
 			System.out.println("Accept? [y]es or [n]o");

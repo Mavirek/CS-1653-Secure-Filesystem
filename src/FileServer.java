@@ -11,7 +11,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
 import java.util.*;
-
+import javax.crypto.*;
+import java.security.*;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class FileServer extends Server {
 
 	public static final int SERVER_PORT = 4321;
@@ -19,7 +21,8 @@ public class FileServer extends Server {
 
 	public static Hashtable<String, SessionID> acceptedSessionIDs;
 	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
-  
+	public static PublicKey filePubKey; 
+	public static PrivateKey filePrivKey; 
 	public FileServer() {
 		super(SERVER_PORT, "FilePile");
 	}
@@ -29,7 +32,15 @@ public class FileServer extends Server {
 	}
   
 	@SuppressWarnings("unchecked")
-	public void start() {
+	public void start() throws Exception {
+		Security.addProvider(new BouncyCastleProvider());
+		
+		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
+		kpg.initialize(2048);
+		KeyPair kp = kpg.generateKeyPair();
+		filePrivKey = kp.getPrivate();
+		filePubKey = kp.getPublic();
+		
 		String fileFile = "FileList.bin";
 		String sessFile = "SessionIDFS.bin";
 		ObjectInputStream fileStream;
