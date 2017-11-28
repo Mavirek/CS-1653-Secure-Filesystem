@@ -218,6 +218,7 @@ public class FileClient extends Client implements FileClientInterface {
 			else {
 				System.out.printf("Error deleting file %s (%s)\n", filename, env.getMessage());
 				return false;
+			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		} /* catch (ClassNotFoundException e1) {
@@ -256,7 +257,7 @@ public class FileClient extends Client implements FileClientInterface {
 					//System.out.println("received KEYNUMGROUP");
 					keyNum = (Integer)env.getObjContents().get(0);
 					group = (String)env.getObjContents().get(1);
-					System.out.println("keyNum = "+keyNum+"\tgroup = "+group);
+					System.out.println("Decrypting with keyNum  "+keyNum+" for group: "+group);
 					env = secureMsg(new Envelope("DOWNLOADF"));
 				}
 				else
@@ -437,7 +438,7 @@ public class FileClient extends Client implements FileClientInterface {
 			//get the most recent key for that group
 			SecretKey key = groupKeys.get(groupKeys.size()-1);
 			//System.out.println("upload key = "+key);
-			//System.out.println("encrypting with keynum "+(groupKeys.size()-1));
+			System.out.println("Encrypting with keyNum "+(groupKeys.size()-1)+" for group: "+group);
 			 do {
 				 byte[] buf = new byte[4096];
 				 	if (env.getMessage().compareTo("READY")!=0) {

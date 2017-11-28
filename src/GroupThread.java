@@ -165,30 +165,31 @@ public class GroupThread extends Thread
 									UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 									SessionID client = (SessionID)message.getObjContents().get(2);
 									if(checkSig((Token)yourToken) && verifySessID(client)) 
-                  {
+									  {
 										if(deleteUser(username, yourToken))
 										{
 											response = new Envelope("OK"); //Success
-                      for(String group : yourToken.getGroups())
-                      {
-                        try
-                        {
-                          KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
-                          keyGen.init(128);
-                          SecretKey key = keyGen.generateKey();
-                          my_gs.gk.addKey(group,key);
-                        }
-                        catch(Exception ge)
-                        {
-                          System.out.println("Error generating new group key after removing user from group");
-                        }
-									    }
-								    }
-							    }
-						    }
-              }
+											  for(String group : yourToken.getGroups())
+											  {
+													try
+													{
+													  KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+													  keyGen.init(128);
+													  SecretKey key = keyGen.generateKey();
+													  my_gs.gk.addKey(group,key);
+													}
+													catch(Exception ge)
+													{
+													  System.out.println("Error generating new group key after removing user from group");
+													}
+												}
+										}
+									}
+								}
+							}
 
-						output.writeObject(encryptEnv(response));
+							output.writeObject(encryptEnv(response));
+						}
 					}
 					else if(message.getMessage().equals("CGROUP")) //Client wants to create a group
 					{
@@ -209,21 +210,22 @@ public class GroupThread extends Thread
 									String group = (String)message.getObjContents().get(0); //Extract the groupname
 									UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 									SessionID client = (SessionID)message.getObjContents().get(2);
-									if(checkSig((Token)yourToken) && verifySessID(client)) {
+									if(checkSig((Token)yourToken) && verifySessID(client)) 
+									{
 										if(cGroup(group, (Token)yourToken))
 										{
 											response = new Envelope("OK"); //Success
-                      try
-                      {
-                        KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
-                        keyGen.init(128);
-                        SecretKey key = keyGen.generateKey();
-                        my_gs.gk.addGroup(group,key);
-                      }
-                      catch(Exception ge)
-                      {
-                        System.out.println("Error generating new group key after removing user from group");
-                       }
+											  try
+											  {
+												KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+												keyGen.init(128);
+												SecretKey key = keyGen.generateKey();
+												my_gs.gk.addGroup(group,key);
+											  }
+											  catch(Exception ge)
+											  {
+												System.out.println("Error generating new group key after removing user from group");
+											   }
 										}
 									}
 								}
@@ -231,6 +233,7 @@ public class GroupThread extends Thread
 						}
 						output.writeObject(encryptEnv(response));
 					}
+					
 					else if(message.getMessage().equals("DGROUP")) //Client wants to delete a group
 					{
 					    /* TODO:  Write this handler */
@@ -406,7 +409,7 @@ public class GroupThread extends Thread
 							proceed = false; //End this communication loop
 						}
 					}
-					output.writeObject(response);
+					//output.writeObject(response);
 				}
 				else if(message.getMessage().equals("GETFILEKEYS")) //Retrieve corresponding file server file keys for a user
 				{
@@ -433,12 +436,14 @@ public class GroupThread extends Thread
 					}
 					output.writeObject(response);
 				}
+				/*
 				else if(message.getMessage().equals("DISCONNECT")) //Client wants to disconnect
 				{
 					updateUserList();
 					socket.close(); //Close the socket
 					proceed = false; //End this communication loop
 				}
+				*/
 				else if(message.getMessage().equals("CHECK")) //Check Password
 				{
 					//decrypt envelope
