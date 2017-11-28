@@ -26,7 +26,7 @@ public class Token implements UserToken, java.io.Serializable{
 	//subject:issuer:group1:group2:...:
 	public Token(String tk, byte[] sHash, byte[] hsh)
 	{
-		System.out.println(tk);
+		//System.out.println(tk);
 		String[] attributes = tk.split(":");
 		subject = attributes[0];
 		issuer = attributes[1];
@@ -74,7 +74,7 @@ public class Token implements UserToken, java.io.Serializable{
 		return fileServer;
 	}
 	public void addGroup(String groupName){
-		System.out.println("Group being added for user: " + subject);
+		//System.out.println("Group being added for user: " + subject);
 		if(groups.add(groupName))
 			System.out.println("Group " + groupName + " added for user: " + subject);
 	}
@@ -123,25 +123,7 @@ public class Token implements UserToken, java.io.Serializable{
 	{
 		return hash;
 	}
-	/* public void signHash(PrivateKey pk) throws Exception
-	{
-		byte[] hash = genHash();
-		//signedHash = [hash]pk;
-		Signature signer = Signature.getInstance("SHA1withRSA");
-		signer.initSign(pk);
-		signer.update(hash);
-		sgn = signer.sign();
-		signedHash = new String(sgn);
-		signed = true;
-	}
-	public boolean verifySign(PublicKey pk) throws Exception
-	{
-		if(!signed) return false;
-		Signature signer = Signature.getInstance("SHA1withRSA");
-		signer.initVerify(pk);
-		signer.update(this.genHash());
-		return signer.verify(sgn); //signedHash.getBytes());
-	} */
+	
 	public void setSignedHash(byte[] sHash)
 	{
 		signedHash = sHash;

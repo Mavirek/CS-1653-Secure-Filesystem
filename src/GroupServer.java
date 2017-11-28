@@ -48,7 +48,7 @@ public class GroupServer extends Server {
 		String userFile = "UserList.bin";
 		String groupFile = "GroupList.bin";
 		String gkFile = "GroupKeysList.bin";
-    String sessFile = "SessionIDGS.bin";
+		String sessFile = "SessionIDGS.bin";
 		Scanner console = new Scanner(System.in);
 		ObjectInputStream userStream;
 		ObjectInputStream groupStream;
@@ -264,8 +264,8 @@ class AutoSave extends Thread
 					outStream.writeObject(my_gs.gList);
 					outStream = new ObjectOutputStream(new FileOutputStream("GroupKeysList.bin"));
 					outStream.writeObject(my_gs.gk);
-          outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin")); 
-			    outStream.writeObject(my_gs.unacceptedSessionIDs);
+					outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin")); 
+					outStream.writeObject(my_gs.unacceptedSessionIDs);
 				}
 				catch(Exception e)
 				{

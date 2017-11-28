@@ -256,7 +256,7 @@ public class FileClientApp
 						System.out.println("Please Connect to Group Server and Get a Token");
 						break;
 					}
-					System.out.println(userToken.toString());
+					//System.out.println(userToken.toString());
 
 					Token t = userToken;
 					if(fc.connect(args[3],Integer.parseInt(args[5]),args[0],args[1]) && t!=null)
