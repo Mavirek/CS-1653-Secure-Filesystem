@@ -7,11 +7,13 @@ public class ShareFile implements java.io.Serializable, Comparable<ShareFile> {
 	private String group;
 	private String path;
 	private String owner;
+	private int keyNum;
 	
-	public ShareFile(String _owner, String _group, String _path) {
+	public ShareFile(String _owner, String _group, String _path, int _keyNum) {
 		group = _group;
 		owner = _owner;
 		path = _path;
+		keyNum = _keyNum;
 	}
 	
 	public String getPath()
@@ -26,6 +28,11 @@ public class ShareFile implements java.io.Serializable, Comparable<ShareFile> {
 	
 	public String getGroup() {
 		return group;
+	}
+	
+	public int getKeyNum()
+	{
+		return keyNum;
 	}
 	
 	public int compareTo(ShareFile rhs) {
