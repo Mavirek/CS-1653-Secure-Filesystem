@@ -279,9 +279,15 @@ public class FileClientApp
 									break;
 								case 3:
 									List<String> flist = fc.listFiles(t, groupPubKey);
-									for(String c : flist)
-										System.out.println(c);
-
+									if(flist != null)
+									{
+										for(String c : flist)
+											System.out.println(c);
+									}
+									else
+									{
+										System.out.println("Error Listing Files"); 
+									}
 									break;
 								case 4:
 									System.out.println("Please enter the Source File: ");

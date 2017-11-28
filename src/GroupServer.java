@@ -22,8 +22,8 @@ public class GroupServer extends Server {
 	public UserList userList;
 	public Hashtable<String, Group> gList = new Hashtable<String, Group>();
 	private EncryptDecrypt ed = new EncryptDecrypt();
-
-	
+	public static Hashtable<String, SessionID> acceptedSessionIDs;
+	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
 	public GroupServer() {
 		super(SERVER_PORT, "ALPHA");
 	}
@@ -37,6 +37,7 @@ public class GroupServer extends Server {
 
 		String userFile = "UserList.bin";
 		String groupFile = "GroupList.bin";
+		String sessFile = "SessionIDGS.bin";
 		Scanner console = new Scanner(System.in);
 		ObjectInputStream userStream;
 		ObjectInputStream groupStream;
@@ -117,6 +118,32 @@ public class GroupServer extends Server {
 			System.out.println("Error reading from GroupList file");
 			System.exit(-1);
 		}
+		//Open Session file to get SessionIDs Hashtable
+		try
+		{
+			//Read SessionIDGS.bin
+			FileInputStream fis = new FileInputStream(sessFile);
+			groupStream = new ObjectInputStream(fis);
+			unacceptedSessionIDs = (Hashtable<String, SessionID>)groupStream.readObject();
+			acceptedSessionIDs = new Hashtable<String, SessionID>(); 
+		}
+		catch(FileNotFoundException e)
+		{
+			System.out.println("SessionIDs Does Not Exist. Creating SessionIDs...");
+			unacceptedSessionIDs = new Hashtable<String, SessionID>();
+			acceptedSessionIDs = new Hashtable<String, SessionID>(); 
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error reading from FileList file");
+			System.exit(-1);
+		}
+		catch(ClassNotFoundException e)
+		{
+			System.out.println("Error reading from FileList file");
+			System.exit(-1);
+		}
+		
 		System.out.println("Group Server is up and running!");
 		//Autosave Daemon. Saves lists every 5 minutes
 		AutoSave aSave = new AutoSave(this);
@@ -168,6 +195,8 @@ class ShutDownListener extends Thread
 			outStream.writeObject(my_gs.userList);
 			outStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
 			outStream.writeObject(my_gs.gList);
+			outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin")); 
+			outStream.writeObject(my_gs.unacceptedSessionIDs); 
 		}
 		catch(Exception e)
 		{

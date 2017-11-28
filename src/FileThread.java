@@ -409,14 +409,20 @@ public class FileThread extends Thread
 								e = new Envelope("ERROR_SESSIONID");
 							output.writeObject(encryptEnv(e,sessKey));
 						}	
+						else if(e.getMessage().equals("DISCONNECT"))
+						{
+							SessionID client = (SessionID)e.getObjContents().get(0); 
+							if(saveSessID(client))
+							{
+								socket.close();
+								proceed = false;
+							}
+						}
 					}
+					
 
 				}
-				else if(enc.getMessage().equals("DISCONNECT"))
-				{
-					socket.close();
-					proceed = false;
-				}
+				
 			} while(proceed);
 		}
 		catch(Exception e)
@@ -491,15 +497,31 @@ public class FileThread extends Thread
 	private boolean verifySessID(SessionID clientID)
 	{
 		System.out.println("Verifying SessionID..."); 
-		//This is not the first time the client has connected to the server. 
-		if(FileServer.sessionIDs.contains(clientID.getUserName()))
+		//This is not the first time the client has connected to the server.
+		//System.out.println("FileServer.sessionIDs.contains(clientID.getUserName()): " + FileServer.sessionIDs.containsKey(clientID.getUserName())); 
+		if(FileServer.unacceptedSessionIDs != null)
+		{
+			if(FileServer.unacceptedSessionIDs.containsKey(clientID.getUserName()))
+			{
+				SessionID storedID = FileServer.unacceptedSessionIDs.get(clientID.getUserName()); 
+				storedID.nextMsg(); 
+				//System.out.println("TEST SessionID: " + clientID.toString()); 
+				//The message is in unacceptedSessionIDs meaning shouldn't be accepted. 
+				System.out.println("StoredID: " + storedID.toString()); 
+				System.out.println("CurrentID: " + clientID.toString()); 
+				if(storedID.equals(clientID))
+					return false; 
+			}
+		}
+		
+		if(FileServer.acceptedSessionIDs.containsKey(clientID.getUserName()))
 		{
 			//Check date is today 
 			if(!clientID.isToday())
 				return false; 
 			
 			//Get the last sessionID stored for the client 
-			SessionID storedID = FileServer.sessionIDs.get(clientID.getUserName()); 
+			SessionID storedID = FileServer.acceptedSessionIDs.get(clientID.getUserName()); 
 			storedID.nextMsg(); 
 			//System.out.println("TEST SessionID: " + clientID.toString()); 
 			//Ensure the last sessionID is one less message than the current ID. 
@@ -507,8 +529,8 @@ public class FileThread extends Thread
 			{
 				//Replace the old stored sessionID with the current sessionID. 
 				//System.out.println("SessionID: " + clientID.toString()); 
-				FileServer.sessionIDs.remove(clientID.getUserName()); 
-				FileServer.sessionIDs.put(clientID.getUserName(), clientID); 
+				FileServer.acceptedSessionIDs.remove(clientID.getUserName()); 
+				FileServer.acceptedSessionIDs.put(clientID.getUserName(), clientID); 
 				return true; 
 			}
 		}
@@ -516,7 +538,7 @@ public class FileThread extends Thread
 		else
 		{
 			//Store this sessionID in the list and accept it. 
-			FileServer.sessionIDs.put(clientID.getUserName(), clientID); 
+			FileServer.acceptedSessionIDs.put(clientID.getUserName(), clientID); 
 			//System.out.println("SessionID: " + clientID.toString()); 
 			return true; 
 		}
@@ -524,10 +546,19 @@ public class FileThread extends Thread
 	}
 	private boolean saveSessID(SessionID clientID)
 	{
-		FileServer.sessionIDs.remove(clientID.getUserName()); 
+		/* SessionID clientID = (SessionID)FileServer.sessionIDs.remove(username); 
+		System.out.println(clientID);
 		clientID.setSession(-1); 
-		FileServer.sessionIDs.put(clientID.getUserName(), clientID); 
-		return true; 
+		SessionID storedID = (SessionID)FileServer.sessionIDs.put(username, clientID);
+		boolean result = storedID.equals(clientID);
+		System.out.println(result); 
+		return result;  */
+		FileServer.acceptedSessionIDs.remove(clientID.getUserName()); 
+		SessionID newClientID = new SessionID(clientID.getUserName(), clientID.getDate(), clientID.getRandNumber(), -1); 
+		FileServer.unacceptedSessionIDs.put(clientID.getUserName(), newClientID); 
+		System.out.println("clientID: " + clientID.toString()); 
+		System.out.println("newClientID: " + newClientID.toString()); 
+		return FileServer.unacceptedSessionIDs.containsKey(clientID.getUserName()); 
 	}
 	private boolean verifyHash(Envelope message, byte[] hash, SecretKeySpec key)
 	{

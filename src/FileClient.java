@@ -171,6 +171,29 @@ public class FileClient extends Client implements FileClientInterface {
 			return false;
 		}
 	}
+	public void disconnect()
+	{
+		Envelope message = new Envelope("DISCONNECT"); 
+		message.addObject(client); 
+		try
+		{
+			Cipher c = Cipher.getInstance("AES/CFB/PKCS5Padding","BC");
+			SecureRandom rand = new SecureRandom();
+			byte[] iv = new byte[16];
+			rand.nextBytes(iv);
+			c.init(Cipher.ENCRYPT_MODE,dhKey,new IvParameterSpec(iv));
+			SealedObject sealedobj = new SealedObject(message,c);
+			Envelope encryptedMsg = new Envelope("ENC");
+			encryptedMsg.addObject(sealedobj);
+			encryptedMsg.addObject(iv);
+			output.writeObject(encryptedMsg);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error: "+e);
+			e.printStackTrace();
+		}
+	}
 	public boolean delete(String filename, UserToken token) {
 		String remotePath;
 		if (filename.charAt(0)=='/') {
