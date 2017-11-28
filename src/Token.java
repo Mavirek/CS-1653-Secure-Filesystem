@@ -10,12 +10,14 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class Token implements UserToken, java.io.Serializable{
 
 	private String issuer;
-	private String subject; 
-	private ArrayList<String> groups = new ArrayList<String>(); 
-	private boolean isAdmin; 
+	private String subject;
+	private ArrayList<String> groups = new ArrayList<String>();
+	private boolean isAdmin;
 	private byte[] signedHash;
-	private boolean signed = false; 
+	private boolean signed = false;
 	private byte[] hash;
+	private String fileServer;
+
 	public Token()
 	{
 		issuer = "Group";
@@ -24,18 +26,21 @@ public class Token implements UserToken, java.io.Serializable{
 	//subject:issuer:group1:group2:...:
 	public Token(String tk, byte[] sHash, byte[] hsh)
 	{
+		System.out.println(tk);
 		String[] attributes = tk.split(":");
 		subject = attributes[0];
 		issuer = attributes[1];
-		for(int i = 2; i < attributes.length; i++)
+		int i = 2;
+		for(; i < attributes.length-1; i++)
 			groups.add(attributes[i]);
-		signedHash = sHash; 
-		hash = hsh; 
+		fileServer = attributes[i];
+		signedHash = sHash;
+		hash = hsh;
 		if(signedHash.equals(null))
-			signed = false; 
-		else 
-			signed = true; 
-		
+			signed = false;
+		else
+			signed = true;
+
 	}
 	public Token(ArrayList<String> g)
 	{
@@ -47,6 +52,14 @@ public class Token implements UserToken, java.io.Serializable{
 		subject = user;
 		groups = g;
 	}
+	public Token(String server, String user, ArrayList<String> g, String fileServer)
+	{
+		issuer = server;
+		subject = user;
+		groups = g;
+		this.fileServer = fileServer;
+
+	}
 	public String getIssuer(){
 		return issuer;
 	}
@@ -55,6 +68,10 @@ public class Token implements UserToken, java.io.Serializable{
 	}
 	public List<String> getGroups(){
 		return groups;
+	}
+
+	public String getFileServer() {
+		return fileServer;
 	}
 	public void addGroup(String groupName){
 		System.out.println("Group being added for user: " + subject);
@@ -74,22 +91,22 @@ public class Token implements UserToken, java.io.Serializable{
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
-
-		builder.append(subject); 
-		builder.append(":"); 
+		builder.append(subject);
+		builder.append(":");
 		builder.append(issuer);
-		builder.append(":"); 
-		String[] groupsArr = groups.toArray(new String[groups.size()]); 
-		Arrays.sort(groupsArr); 
+		builder.append(":");
+		String[] groupsArr = groups.toArray(new String[groups.size()]);
+		Arrays.sort(groupsArr);
 		for(int i = 0; i < groupsArr.length; i++)
 		{
-			builder.append(groupsArr[i] + ":"); 
+			builder.append(groupsArr[i] + ":");
 		}
-		return builder.toString(); 
+		builder.append(fileServer + ":");
+		return builder.toString();
 	}
 	public byte[] genHash()
 	{
-		String token = this.toString(); 
+		String token = this.toString();
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("SHA256", "BC");
@@ -98,41 +115,42 @@ public class Token implements UserToken, java.io.Serializable{
 		catch(Exception e) {
 			System.out.println(e);
 		}
-		signed = false; 
-		hash = md.digest(); 
-		return hash; 
+		signed = false;
+		hash = md.digest();
+		return hash;
 	}
 	public byte[] getHash()
 	{
-		return hash; 
+		return hash;
 	}
-	/* public void signHash(PrivateKey pk) throws Exception 
+	/* public void signHash(PrivateKey pk) throws Exception
 	{
-		byte[] hash = genHash(); 
-		//signedHash = [hash]pk; 
-		Signature signer = Signature.getInstance("SHA1withRSA"); 
+		byte[] hash = genHash();
+		//signedHash = [hash]pk;
+		Signature signer = Signature.getInstance("SHA1withRSA");
 		signer.initSign(pk);
-		signer.update(hash); 
-		sgn = signer.sign(); 		
-		signedHash = new String(sgn); 
-		signed = true; 
+		signer.update(hash);
+		sgn = signer.sign();
+		signedHash = new String(sgn);
+		signed = true;
 	}
 	public boolean verifySign(PublicKey pk) throws Exception
 	{
-		if(!signed) return false; 
-		Signature signer = Signature.getInstance("SHA1withRSA"); 
-		signer.initVerify(pk); 
+		if(!signed) return false;
+		Signature signer = Signature.getInstance("SHA1withRSA");
+		signer.initVerify(pk);
 		signer.update(this.genHash());
-		return signer.verify(sgn); //signedHash.getBytes()); 
+		return signer.verify(sgn); //signedHash.getBytes());
 	} */
 	public void setSignedHash(byte[] sHash)
 	{
-		signedHash = sHash; 
-		signed = true; 
+		signedHash = sHash;
+		signed = true;
 	}
 	public boolean isSigned()
 	{
-		return signed; 
+		return signed;
+
 	}
 	public byte[] getSignedHash()
 	{

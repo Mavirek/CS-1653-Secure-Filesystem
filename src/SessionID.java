@@ -17,6 +17,13 @@ public class SessionID implements java.io.Serializable
 		randomNumber = sr.nextInt(); 
 		sequenceNumber = 0; 
 	}
+	public SessionID(String un, Date d, int rn, int sn)
+	{
+		username = un; 
+		date = d; 
+		randomNumber = rn; 
+		sequenceNumber = sn; 
+	}
 	public void nextMsg()
 	{
 		sequenceNumber++; 
@@ -46,5 +53,13 @@ public class SessionID implements java.io.Serializable
 	public String getUserName()
 	{
 		return username; 
+	}
+	public int getRandNumber()
+	{
+		return randomNumber; 
+	}
+	public Date getDate()
+	{
+		return date; 
 	}
 }

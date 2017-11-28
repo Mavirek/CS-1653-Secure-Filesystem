@@ -31,6 +31,8 @@ public class GroupServer extends Server {
 	//gk<String groupName, ArrayList<SecretKey> gkList>
 	public GroupKeys gk;
 	
+	public static Hashtable<String, SessionID> acceptedSessionIDs;
+	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
 	public GroupServer() {
 		super(SERVER_PORT, "ALPHA");
 	}
@@ -41,14 +43,17 @@ public class GroupServer extends Server {
 	@SuppressWarnings("unchecked")
 	public void start() {
 		// Overwrote server.start() because if no user file exists, initial admin account needs to be created
+
 		Security.addProvider(new BouncyCastleProvider());
 		String userFile = "UserList.bin";
 		String groupFile = "GroupList.bin";
 		String gkFile = "GroupKeysList.bin";
+    String sessFile = "SessionIDGS.bin";
 		Scanner console = new Scanner(System.in);
 		ObjectInputStream userStream;
 		ObjectInputStream groupStream;
 		ObjectInputStream gkStream;
+    
 		String username = "";
 		String password = "";
 		byte[] hashPass;
@@ -144,6 +149,31 @@ public class GroupServer extends Server {
 			System.out.println("Error reading from GroupList file");
 			System.exit(-1);
 		}
+		//Open Session file to get SessionIDs Hashtable
+		try
+		{
+			//Read SessionIDGS.bin
+			FileInputStream fis = new FileInputStream(sessFile);
+			groupStream = new ObjectInputStream(fis);
+			unacceptedSessionIDs = (Hashtable<String, SessionID>)groupStream.readObject();
+			acceptedSessionIDs = new Hashtable<String, SessionID>(); 
+		}
+		catch(FileNotFoundException e)
+		{
+			System.out.println("SessionIDs Does Not Exist. Creating SessionIDs...");
+			unacceptedSessionIDs = new Hashtable<String, SessionID>();
+			acceptedSessionIDs = new Hashtable<String, SessionID>(); 
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error reading from FileList file");
+			System.exit(-1);
+		}
+		catch(ClassNotFoundException e)
+		{
+			System.out.println("Error reading from FileList file");
+			System.exit(-1);
+		}
 		
 		System.out.println("Group Server is up and running!");
 		//Autosave Daemon. Saves lists every 5 minutes
@@ -198,6 +228,8 @@ class ShutDownListener extends Thread
 			outStream.writeObject(my_gs.gList);
 			outStream = new ObjectOutputStream(new FileOutputStream("GroupKeysList.bin"));
 			outStream.writeObject(my_gs.gk);
+			outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin")); 
+			outStream.writeObject(my_gs.unacceptedSessionIDs); 
 		}
 		catch(Exception e)
 		{
@@ -232,6 +264,8 @@ class AutoSave extends Thread
 					outStream.writeObject(my_gs.gList);
 					outStream = new ObjectOutputStream(new FileOutputStream("GroupKeysList.bin"));
 					outStream.writeObject(my_gs.gk);
+          outStream = new ObjectOutputStream(new FileOutputStream("SessionIDGS.bin")); 
+			    outStream.writeObject(my_gs.unacceptedSessionIDs);
 				}
 				catch(Exception e)
 				{
