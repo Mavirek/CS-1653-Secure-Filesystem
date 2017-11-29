@@ -25,8 +25,8 @@ The file server will create a shared_files inside the working directory if one d
 	
 ## Resetting the Group or File Server
 
-To reset the Group Server, delete the files `UserList.bin`, `GroupKeysList.bin`, `GroupList.bin` & `SessionIDIG.bin`
+To reset the Group Server, delete the files `UserList.bin`, `GroupKeysList.bin`, `GroupList.bin` & `SessionIDGS.bin`
 
-To reset the File Server, delete the `FileList.bin` & `SessionIDIF.bin` files and the `shared_files/` directory.
+To reset the File Server, delete the `FileList.bin` & `SessionIDFS.bin` files and the `shared_files/` directory.
 
 
