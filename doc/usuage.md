@@ -20,8 +20,13 @@ Note that the port number argument to `RunFileServer is optional.  This argument
 
 The file server will create a shared_files inside the working directory if one does not exist. The file server is now online.
 
+## Running the Client App
+	java FileClientApp <username> <password> <group server name> <file server name> <group server port> <file server port>
+	
 ## Resetting the Group or File Server
 
-To reset the Group Server, delete the file `UserList.bin`
+To reset the Group Server, delete the files `UserList.bin` 'GroupKeysList.bin' 'GroupList.bin' & 'SessionIDIG.bin'
 
-To reset the File Server, delete the `FileList.bin` file and the `shared_files/` directory.
+To reset the File Server, delete the `FileList.bin` & 'SessionIDIF.bin' files and the `shared_files/` directory.
+
+
