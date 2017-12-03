@@ -130,13 +130,13 @@ public class FileServer extends Server {
 			while(running)
 			{
 				sock = serverSock.accept();
-				System.out.println("Sock host name : " + sock.getInetAddress().getHostName());
+				/*System.out.println("Sock host name : " + sock.getInetAddress().getHostName());
 				System.out.println("Sock IP : " + sock.getInetAddress());
 				System.out.println("Sock Local port : " +sock.getLocalPort());
 				System.out.println("Sock string : " + sock.toString());
 				System.out.println("ServerSock host name : " + serverSock.getInetAddress().getHostName());
 				System.out.println("ServerSock IP : " + serverSock.getInetAddress());
-				System.out.println("ServerSock port : " + serverSock.getLocalPort());
+				System.out.println("ServerSock port : " + serverSock.getLocalPort());*/
 				thread = new FileThread(sock, sock.getInetAddress().toString(), port);
 				thread.start();
 			}
@@ -189,6 +189,8 @@ class AutoSaveFS extends Thread
 				{
 					outStream = new ObjectOutputStream(new FileOutputStream("FileList.bin"));
 					outStream.writeObject(FileServer.fileList);
+					outStream = new ObjectOutputStream(new FileOutputStream("SessionIDFS.bin"));
+					outStream.writeObject(FileServer.unacceptedSessionIDs);
 				}
 				catch(Exception e)
 				{

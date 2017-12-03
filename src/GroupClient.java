@@ -35,7 +35,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 private SecureRandom random = new SecureRandom();
 	 private byte[] challengeD = new byte[4];
 	 private SecretKeySpec sessKey;
-   private SessionID client = null; 
+     private SessionID client = null; 
 	 private String fileServer;
 	 private int filePort;
 
@@ -49,15 +49,12 @@ public class GroupClient extends Client implements GroupClientInterface {
 		client = new SessionID(username); 
 		groupPubKey = (Envelope)input.readObject();
 		groupPK = (PublicKey)groupPubKey.getObjContents().get(0);
-
+		
 		message = new Envelope("CHECK");
-
 		byte[] userBytes = username.getBytes();
 		byte[] passHashBytes = ed.hashThis(password);
-
 		byte[] encryptedUser = null;
 		byte[] encryptedPassHash = null;
-
 		try {
 			Cipher enc = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
 			enc.init(Cipher.ENCRYPT_MODE, groupPK);
@@ -93,7 +90,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 				clientKA.doPhase(dhPK,true);
 				byte[] sharedKey = Arrays.copyOfRange(clientKA.generateSecret(),0,16);
-				System.out.println("Shared Key : " + new BigInteger(sharedKey));
+				//System.out.println("Shared Key : " + new BigInteger(sharedKey));
 
 				byte[] iv = new byte[16];
 				random.nextBytes(iv);
@@ -123,29 +120,6 @@ public class GroupClient extends Client implements GroupClientInterface {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-
-			//SRP6Client client = new SRP6Client();
-    	//client.init(new BigInteger(ed.getPrime(), 16), new BigInteger(ed.getGen(), 16), new SHA256Digest(), random);
-			//BigInteger A = client.generateClientCredentials((byte[])message.getObjContents().get(1), userBytes, passHashBytes);
-			//message = new Envelope("genSecret");
-			//message.addObject(A);
-			//output.writeObject(message);
-			//Envelope incoming = (Envelope)input.readObject();
-			//BigInteger B = (BigInteger)incoming.getObjContents().get(0);
-			//System.out.println("N : " + new BigInteger(ed.getPrime(), 16).toString());
-			//System.out.println("g : " + new BigInteger(ed.getGen(), 16).toString());
-			//System.out.println("userBytes : " + new BigInteger(userBytes).toString());
-			//System.out.println("passBytes : " + new BigInteger(passHashBytes).toString());
-			//System.out.println("B : " + B.toString());
-			//System.out.println("A : " + A.toString());
-			//BigInteger clientS = null;
-			//try {
-			//	clientS = client.calculateSecret(B);
-			//}
-			//catch(Exception e) {
-			//	e.printStackTrace();
-			//}
-			//System.out.println("Client Secret : " + clientS.toString());
 		}
 		return false;
 
@@ -163,8 +137,6 @@ public class GroupClient extends Client implements GroupClientInterface {
 			System.err.println("Error: " + e.getMessage());
 			e.printStackTrace(System.err);
 		 }
-		 
-		 
 	 }
 
 	 public UserToken getToken(String username)
@@ -196,12 +168,10 @@ public class GroupClient extends Client implements GroupClientInterface {
 				if(temp.size() == 3)
 				{
 					String t = (String)temp.get(0);
-
 					byte[] signedHash = (byte[])temp.get(1);
 					byte[] hash = (byte[])temp.get(2);
 					token = new Token(t, signedHash, hash);
-
-					System.out.println("Token Created");
+					//System.out.println("Token Created");
 					return token;
 				}
 			}

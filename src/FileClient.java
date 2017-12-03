@@ -259,7 +259,7 @@ public class FileClient extends Client implements FileClientInterface {
 					//System.out.println("received KEYNUMGROUP");
 					keyNum = (Integer)env.getObjContents().get(0);
 					group = (String)env.getObjContents().get(1);
-					System.out.println("Decrypting with keyNum  "+keyNum+" for group: "+group);
+					//System.out.println("Decrypting with keyNum  "+keyNum+" for group: "+group);
 					env = secureMsg(new Envelope("DOWNLOADF"));
 				}
 				else
@@ -284,29 +284,10 @@ public class FileClient extends Client implements FileClientInterface {
 						byte[] plainText = ciph.doFinal(envContents);
 						//System.out.println("plainText = "+new String(plainText));
 						fos.write(plainText, 0, (Integer)env.getObjContents().get(1));
-
-		/**	if (!file.exists()) {
-				file.createNewFile();
-				FileOutputStream fos = new FileOutputStream(file);
-
-				Envelope env = new Envelope("DOWNLOADF"); //Success
-				env.addObject(sourceFile);
-				env.addObject(token);
-				env.addObject(client);
-				env.setStringRep(sourceFile + ":" + token.toString() + ":" + client.toString());
-				env = secureMsg(env);
-				client.nextMsg();
-				//output.writeObject(env);
-
-				//env = (Envelope)input.readObject();
-
-				while (env.getMessage().compareTo("CHUNK")==0) {
-						fos.write((byte[])env.getObjContents().get(0), 0, (Integer)env.getObjContents().get(1));**/
 						System.out.printf(".");
 						env = new Envelope("DOWNLOADF"); //Success
 						env = secureMsg(env);
 						//output.writeObject(env);
-
 						//env = (Envelope)input.readObject();
 				}
 				fos.close();
@@ -426,8 +407,7 @@ public class FileClient extends Client implements FileClientInterface {
 			 if(env.getMessage().equals("READY"))
 			 {
 				System.out.printf("Meta data upload successful\n");
-
-			}
+			 }
 			 else {
 
 				 System.out.printf("Upload failed: %s\n", env.getMessage());
@@ -584,88 +564,6 @@ public class FileClient extends Client implements FileClientInterface {
 			SecretKeySpec key = genKey(); 
 			byte[] hash = genHash(message.toString(), key);
 			message.addObject(key); //Add key used for hmac hash gen. 
-	//The four methods below will verify that the signature matches with the file server and then proceed to the desired methods.
-	/**public boolean delete(String filename, UserToken token, PublicKey groupPubKey) throws IOException, ClassNotFoundException{
-		//Verify signature in file server
-		Envelope message = new Envelope("Verify Sign");
-		message.addObject(token);
-		message.addObject(groupPubKey);
-		message.setStringRep(token.toString() + ":" + groupPubKey.toString());
-		//output.writeObject(message);
-		Envelope incoming = secureMsg(message); //(Envelope)input.readObject();
-		if(incoming.getMessage().equals("APPROVED"))
-		{
-			System.out.println("Signature Approved, Proceeding to delete...");
-			return delete(filename, token);
-		}
-		else if(incoming.getMessage().equals("NOT APPROVED"))
-			System.out.println("Signature was not Approved!!!");
-
-		return false;
-	}
-	public boolean download(String sourceFile, String destFile, UserToken token, PublicKey groupPubKey) throws IOException, ClassNotFoundException{
-		//Verify signature in file server
-		Envelope message = new Envelope("Verify Sign");
-		message.addObject(token);
-		message.addObject(groupPubKey);
-		message.setStringRep(token.toString() + ":" + groupPubKey.toString());
-		//output.writeObject(message);
-		Envelope incoming = secureMsg(message); //(Envelope)input.readObject();
-		if(incoming.getMessage().equals("APPROVED"))
-		{
-			System.out.println("Signature Approved, Proceeding to download...");
-			return download(sourceFile, destFile, token);
-		}
-		else if(incoming.getMessage().equals("NOT APPROVED"))
-			System.out.println("Signature was not Approved!!!");
-
-		return false;
-	}
-	@SuppressWarnings("unchecked")
-	public List<String> listFiles(UserToken token, PublicKey groupPubKey) throws IOException, ClassNotFoundException{
-		//Verify signature in file server
-		Envelope message = new Envelope("Verify Sign");
-		message.addObject(token);
-		message.addObject(groupPubKey);
-		message.setStringRep(token.toString() + ":" + groupPubKey.toString());
-		//output.writeObject(message);
-		Envelope incoming = secureMsg(message); //(Envelope)input.readObject();
-		if(incoming.getMessage().equals("APPROVED"))
-		{
-			System.out.println("Signature Approved, Proceeding to listFiles...");
-			return listFiles(token);
-		}
-		else if(incoming.getMessage().equals("NOT APPROVED"))
-			System.out.println("Signature was not Approved!!!");
-
-		return null;
-	}
-	public boolean upload(String sourceFile, String destFile, String group, UserToken token, PublicKey groupPubKey) throws IOException, ClassNotFoundException{
-		//Verify signature in file server
-		Envelope message = new Envelope("Verify Sign");
-		message.addObject(token);
-		message.addObject(groupPubKey);
-		message.setStringRep(token.toString() + ":" + groupPubKey.toString());
-		//output.writeObject(message);
-		Envelope incoming = secureMsg(message); //(Envelope)input.readObject();
-		if(incoming.getMessage().equals("APPROVED"))
-		{
-			System.out.println("Signature Approved, Proceeding to upload...");
-			return upload(sourceFile, destFile, group, token);
-		}
-		else if(incoming.getMessage().equals("NOT APPROVED"))
-			System.out.println("Signature was not Approved!!!");
-
-		return false;
-	}
-
-	public Envelope secureMsg (Envelope message) {
-		try {
-			// Generate Hmac hash
-			SecretKeySpec key = genKey();
-			byte[] hash = genHash(message.toString(), key);
-			message.addObject(key); //Add key used for hmac hash gen.
- **/
 			// Encrypt original Envelope
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
 			SecureRandom IV = new SecureRandom();

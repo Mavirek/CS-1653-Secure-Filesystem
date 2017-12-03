@@ -81,36 +81,37 @@ public class GroupThread extends Thread
 						SessionID client = (SessionID)message.getObjContents().get(3); //Get SessionID
 						if(verifySessID(client))
 						{
-              if(username == null) {
-							  response = new Envelope("FAIL");
-							  response.addObject(null);
-							  output.writeObject(encryptEnv(response));
-						  }
-              else
-              {
-                StringBuilder sb = new StringBuilder("");
-                sb.append((String)message.getObjContents().get(1));
-                sb.append("#");
-                sb.append((int)message.getObjContents().get(2));
-                Token yourToken = createToken(username, sb.toString()); //Create a token
+							if(username == null) 
+							{
+								response = new Envelope("FAIL");
+								response.addObject(null);
+								output.writeObject(encryptEnv(response));
+						    }
+							else
+							{
+								StringBuilder sb = new StringBuilder("");
+								sb.append((String)message.getObjContents().get(1));
+								sb.append("#");
+								sb.append((int)message.getObjContents().get(2));
+								Token yourToken = createToken(username, sb.toString()); //Create a token
 
-                //Respond to the client. On error, the client will receive a null token
-                response = new Envelope("OK");
+								//Respond to the client. On error, the client will receive a null token
+								response = new Envelope("OK");
 
-                //Generate a Signature
-                System.out.println("Group Server Signing Token...");
-                byte[] hash = yourToken.genHash();
-                //signedHash = [hash]pk;
-                Signature signer = Signature.getInstance("SHA1withRSA", "BC");
-                signer.initSign(groupPrivKey);
-                signer.update(hash);
-                //System.out.println("Hash in Token in File Server: " + new String(hash));
-                yourToken.setSignedHash(signer.sign());
-                response.addObject(yourToken.toString());
-                response.addObject(yourToken.getSignedHash());
-                response.addObject(hash);
-                output.writeObject(encryptEnv(response));
-              }
+								//Generate a Signature
+								System.out.println("Group Server Signing Token...");
+								byte[] hash = yourToken.genHash();
+								//signedHash = [hash]pk;
+								Signature signer = Signature.getInstance("SHA1withRSA", "BC");
+								signer.initSign(groupPrivKey);
+								signer.update(hash);
+								//System.out.println("Hash in Token in File Server: " + new String(hash));
+								yourToken.setSignedHash(signer.sign());
+								response.addObject(yourToken.toString());
+								response.addObject(yourToken.getSignedHash());
+								response.addObject(hash);
+								output.writeObject(encryptEnv(response));
+							}
 						}
 					}
 					else if(message.getMessage().equals("CUSER")) //Client wants to create a user
@@ -165,12 +166,12 @@ public class GroupThread extends Thread
 									UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 									SessionID client = (SessionID)message.getObjContents().get(2);
 									if(checkSig((Token)yourToken) && verifySessID(client)) 
-									  {
+									{
 										if(deleteUser(username, yourToken))
 										{
 											response = new Envelope("OK"); //Success
-											  for(String group : yourToken.getGroups())
-											  {
+											    for(String group : yourToken.getGroups())
+											    {
 													try
 													{
 													  KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
@@ -215,17 +216,17 @@ public class GroupThread extends Thread
 										if(cGroup(group, (Token)yourToken))
 										{
 											response = new Envelope("OK"); //Success
-											  try
-											  {
+											try
+											{
 												KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
 												keyGen.init(128);
 												SecretKey key = keyGen.generateKey();
 												my_gs.gk.addGroup(group,key);
-											  }
-											  catch(Exception ge)
-											  {
+											}
+											catch(Exception ge)
+											{
 												System.out.println("Error generating new group key after removing user from group");
-											   }
+											}
 										}
 									}
 								}
@@ -256,7 +257,7 @@ public class GroupThread extends Thread
 										if(deleteGroup(group, (Token)yourToken))
 										{
 											response = new Envelope("OK"); //Success
-                      my_gs.gk.removeGroup(group);
+											my_gs.gk.removeGroup(group);
 										}
 									}
 								}
@@ -378,17 +379,17 @@ public class GroupThread extends Thread
 														my_gs.gList.get(group).removeUser(userToBeRemoved);
 														my_gs.userList.removeGroup(userToBeRemoved, group);
 														response = new Envelope("OK"); //Success
-                            try
-                            {
-                              KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
-                              keyGen.init(128);
-                              SecretKey key = keyGen.generateKey();
-                              my_gs.gk.addKey(group,key);
-                            }
-                            catch(Exception ge)
-                            {
-                              System.out.println("Error generating new group key after removing user from group");
-                            }
+														try
+														{
+															KeyGenerator keyGen = KeyGenerator.getInstance("AES","BC");
+															keyGen.init(128);
+															SecretKey key = keyGen.generateKey();
+															my_gs.gk.addKey(group,key);
+														}
+														catch(Exception ge)
+														{
+															System.out.println("Error generating new group key after removing user from group");
+														}
 													}
 												}
 											}
@@ -458,13 +459,11 @@ public class GroupThread extends Thread
 					byte[] decryptedPassHash=null;
 
 					try {
-			      Cipher dec = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
-			  		dec.init(Cipher.DECRYPT_MODE, kp.getPrivate());
-			      decryptedUser = dec.doFinal(encryptedUser);
-			      decryptedPassHash = dec.doFinal(encryptedPassHash);
-
-
-						System.out.println("decrypted username : " + new String(decryptedUser));
+						Cipher dec = Cipher.getInstance("RSA/ECB/NoPadding", "BC");
+						dec.init(Cipher.DECRYPT_MODE, kp.getPrivate());
+						decryptedUser = dec.doFinal(encryptedUser);
+						decryptedPassHash = dec.doFinal(encryptedPassHash);
+						//System.out.println("decrypted username : " + new String(decryptedUser));
 					}
 					catch(Exception e) {
 						System.out.println(e);
@@ -498,7 +497,7 @@ public class GroupThread extends Thread
 							PublicKey clientPK = (PublicKey)response.getObjContents().get(0);
 							gKA.doPhase(clientPK,true);
 							byte[] sharedKey = Arrays.copyOfRange(gKA.generateSecret(),0,16);
-							System.out.println("Shared Key : " + new BigInteger(sharedKey));
+							//System.out.println("Shared Key : " + new BigInteger(sharedKey));
 
 							byte[] encC = (byte[])response.getObjContents().get(1);
 							byte[] iv = (byte[])response.getObjContents().get(2);
@@ -517,39 +516,7 @@ public class GroupThread extends Thread
 							else {
 								response = new Envelope("Failed");
 							}
-
-							//byte[] salt;
-
-						//	if((salt = my_gs.userList.getSalt(userName)) == null) {
-						//		salt = new byte[16];
-						//		SecureRandom sr = new SecureRandom();
-						//		sr.nextBytes(salt);
-						//		my_gs.userList.setSalt(userName, salt);
-						//	}
-
-							//SRP6VerifierGenerator gen = new SRP6VerifierGenerator();
-							//BigInteger N = new BigInteger(ed.getPrime(), 16);
-							//BigInteger g = new BigInteger(ed.getGen(), 16);
-							//gen.init(N, g, new SHA256Digest());
-    				  //BigInteger v = gen.generateVerifier(salt, decryptedUser, decryptedPassHash);
-							//SRP6Server server = new SRP6Server();
-	 						//server.init(N, g, v, new SHA256Digest(), random);
-							//BigInteger B = server.generateServerCredentials();
-							//response.addObject(B);
-							//System.out.println("N : " + N.toString());
-							//System.out.println("g : " + g.toString());
-							//System.out.println("userBytes : " + new BigInteger(decryptedUser).toString());
-							//System.out.println("userBytes : " + new BigInteger(decryptedPassHash).toString());
-							//System.out.println("B : " + B.toString());
-							//output.writeObject(response);
-							//Envelope incoming = (Envelope)input.readObject();
-							//System.out.println(incoming.getMessage());
-							//BigInteger A = (BigInteger)incoming.getObjContents().get(0);
-							//System.out.println("A : " + A.toString());
-					  	//BigInteger serverS = server.calculateSecret(A);
-							//System.out.println("Server Secret : " + serverS);
 						}
-
 						else
 						{
 							response = new Envelope("USER UNAUTHORIZED");
@@ -557,7 +524,6 @@ public class GroupThread extends Thread
 							socket.close();
 							proceed = false;
 						}
-
 						output.writeObject(response);
 					}
 					else
@@ -891,18 +857,11 @@ public class GroupThread extends Thread
 	}
 	private boolean saveSessID(SessionID clientID)
 	{
-		/* SessionID clientID = (SessionID) my_gs.sessionIDs.remove(userName);
-		System.out.println(clientID);
-		clientID.setSession(-1);
-		SessionID storedID = (SessionID)my_gs.sessionIDs.put(userName, clientID);
-		boolean result = storedID.equals(clientID);
-		System.out.println(result);
-		return result;  */
 		my_gs.acceptedSessionIDs.remove(clientID.getUserName());
 		SessionID newClientID = new SessionID(clientID.getUserName(), clientID.getDate(), clientID.getRandNumber(), -1);
 		my_gs.unacceptedSessionIDs.put(clientID.getUserName(), newClientID);
-		System.out.println("clientID: " + clientID.toString());
-		System.out.println("newClientID: " + newClientID.toString());
+		//System.out.println("clientID: " + clientID.toString());
+		//System.out.println("newClientID: " + newClientID.toString());
 		return my_gs.unacceptedSessionIDs.containsKey(clientID.getUserName());
 	}
 	private boolean verifyHash(Envelope message, byte[] hash, SecretKeySpec key)

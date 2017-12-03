@@ -135,7 +135,7 @@ public class FileThread extends Thread
 				else if(enc.getMessage().equals("ENC"))
 				{
 					Envelope e = decryptEnv(enc,sessKey);
-					System.out.println("Before null");
+					//System.out.println("Before null");
 					if(e != null)
 					{
 						System.out.println("Request received: " + e.getMessage());
@@ -149,7 +149,7 @@ public class FileThread extends Thread
 							Signature signed = Signature.getInstance("SHA1WithRSA", "BC");
 							signed.initVerify(groupPubKey);
 							//System.out.println("Hash in Token in File Server: " + new String(t.getHash()));
-							System.out.println(t.toString());
+							//System.out.println(t.toString());
 							signed.update(t.getHash());
 							if(signed.verify(t.getSignedHash())) {
 
@@ -404,78 +404,10 @@ public class FileThread extends Thread
 									System.out.printf("Error user %s doesn't have permission\n", t.getSubject());
 									e = new Envelope("ERROR_PERMISSION");
 								}
-								else {
-
-
-
-											/**	e.addObject(buf);
-												e.addObject(new Integer(n));
-
-												output.writeObject(encryptEnv(e,sessKey));
-
-												e = decryptEnv((Envelope)input.readObject(),sessKey);
-
-
-											}
-											while (fis.available()>0);
-
-											//If server indicates success, return the member list
-											if(e.getMessage().compareTo("DOWNLOADF")==0)
-											{
-
-												e = new Envelope("EOF");
-												output.writeObject(encryptEnv(e,sessKey));
-
-												e = decryptEnv((Envelope)input.readObject(),sessKey);
-												if(e.getMessage().compareTo("OK")==0) {
-													System.out.printf("File data upload successful\n");
-												}
-												else {
-
-													System.out.printf("Download failed: %s\n", e.getMessage());
-
-												}
-
-											}
-											else {
-
-												System.out.printf("Download failed: %s\n", e.getMessage());
-
-											}
-											fis.close();
-										}
-									}
-									catch(Exception e1)
-									{
-										System.err.println("Error: " + e.getMessage());
-										e1.printStackTrace(System.err);
-
-									}
-								}
-							}
-						}
-						else if (e.getMessage().compareTo("DELETEF")==0) {
-
-							String remotePath = (String)e.getObjContents().get(0);
-							Token t = (Token)e.getObjContents().get(1);
-							SessionID client = (SessionID)e.getObjContents().get(2);
-							if(verifySessID(client))
-							{
-								ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
-								if (sf == null) {
-									System.out.printf("Error: File %s doesn't exist\n", remotePath);
-									e = new Envelope("ERROR_DOESNTEXIST");
-								}
-								else if (!t.getGroups().contains(sf.getGroup())){
-									System.out.printf("Error user %s doesn't have permission\n", t.getSubject());
-									e = new Envelope("ERROR_PERMISSION");
-								}
-								else {**/
-
+								else 
+								{
 									try
 									{
-
-
 										File f = new File("shared_files/"+"_"+remotePath.replace('/', '_'));
 
 										if (!f.exists()) {
@@ -608,8 +540,8 @@ public class FileThread extends Thread
 				storedID.nextMsg(); 
 				//System.out.println("TEST SessionID: " + clientID.toString()); 
 				//The message is in unacceptedSessionIDs meaning shouldn't be accepted. 
-				System.out.println("StoredID: " + storedID.toString()); 
-				System.out.println("CurrentID: " + clientID.toString()); 
+				//System.out.println("StoredID: " + storedID.toString()); 
+				//System.out.println("CurrentID: " + clientID.toString()); 
 				if(storedID.equals(clientID))
 					return false; 
 			}
@@ -649,18 +581,11 @@ public class FileThread extends Thread
 	}
 	private boolean saveSessID(SessionID clientID)
 	{
-		/* SessionID clientID = (SessionID)FileServer.sessionIDs.remove(username); 
-		System.out.println(clientID);
-		clientID.setSession(-1); 
-		SessionID storedID = (SessionID)FileServer.sessionIDs.put(username, clientID);
-		boolean result = storedID.equals(clientID);
-		System.out.println(result); 
-		return result;  */
 		FileServer.acceptedSessionIDs.remove(clientID.getUserName()); 
 		SessionID newClientID = new SessionID(clientID.getUserName(), clientID.getDate(), clientID.getRandNumber(), -1); 
 		FileServer.unacceptedSessionIDs.put(clientID.getUserName(), newClientID); 
-		System.out.println("clientID: " + clientID.toString()); 
-		System.out.println("newClientID: " + newClientID.toString()); 
+		//System.out.println("clientID: " + clientID.toString()); 
+		//System.out.println("newClientID: " + newClientID.toString()); 
 		return FileServer.unacceptedSessionIDs.containsKey(clientID.getUserName()); 
 	}
 	private boolean verifyHash(Envelope message, byte[] hash, SecretKeySpec key)
@@ -696,17 +621,14 @@ public class FileThread extends Thread
 		sb.append(serverIP);
 		sb.append("#");
 		sb.append(serverPort);
-		System.out.println(t.getFileServer());
-		System.out.println(sb.toString());
+		//System.out.println(t.getFileServer());
+		//System.out.println(sb.toString());
 		String[] tsplit = t.getFileServer().split("#");
 
 		try {
-			System.out.println(InetAddress.getByName(tsplit[0]).equals(socket.getLocalAddress()));
-			System.out.println(Integer.parseInt(tsplit[1]) == port);
-			System.out.println("Port : " + port);
-
-
-
+			//System.out.println(InetAddress.getByName(tsplit[0]).equals(socket.getLocalAddress()));
+			//System.out.println(Integer.parseInt(tsplit[1]) == port);
+			//System.out.println("Port : " + port);
 			if(InetAddress.getByName(tsplit[0]).equals(socket.getLocalAddress()) && Integer.parseInt(tsplit[1]) == socket.getLocalPort())
 				return true;
 			else
