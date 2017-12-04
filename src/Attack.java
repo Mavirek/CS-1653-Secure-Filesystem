@@ -7,19 +7,21 @@ public class Attack{
 
 	public static void main(String[] args)
 	{
-		System.out.println("I am the attacker"); 
-		GroupClient gc = new GroupClient(); 
+		System.out.println("I am the attacker");
+		AttackClient ac = new AttackClient();
 		while(true)
 		{
 			try{
-				gc.connect(args[0], Integer.parseInt(args[1]), "sai", "aaa", "localhost", 4321); 
+				if(ac.connect(args[0], Integer.parseInt(args[1]), "jak244", "keener", "localhost", 4321)) {
+          ac.attack();
+        }
+
 			}
 			catch(Exception e){
-				System.out.println(e); 
-				System.exit(0); 
+				e.printStackTrace();
+				System.exit(0);
 			}
 		}
-		
+
 	}
 }
-
