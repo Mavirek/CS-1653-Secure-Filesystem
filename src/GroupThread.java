@@ -406,9 +406,16 @@ public class GroupThread extends Thread
 						updateUserList();
 						if(saveSessID(client))
 						{
+							my_gs.gtip.remove(this);
 							socket.close(); //Close the socket
 							proceed = false; //End this communication loop
 						}
+					}
+					else
+					{
+						my_gs.gtip.remove(this);
+						socket.close();
+						proceed = false;
 					}
 					//output.writeObject(response);
 				}
