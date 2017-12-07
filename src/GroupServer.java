@@ -193,20 +193,21 @@ public class GroupServer extends Server {
 			while(true)
 			{
 				sock = serverSock.accept();
-				thread = new GroupThread(sock, this);
+				//thread = new GroupThread(sock, this);
 				if(!gtip.contains(sock.getInetAddress().toString()))
 			        {
+				    thread = new GroupThread(sock, this);
 				    gtip.put(thread,sock.getInetAddress().toString());
 				    thread.start();
 				    System.out.println("connected");
-				     if(thread.getState()==Thread.State.TERMINATED)
-				    	{
-				     gtip.remove(thread);
-					    	}
+				    //if(thread.getState()==Thread.State.TERMINATED)
+				    // {
+				    //	gtip.remove(thread);
+				    //}
 				}
 				else{
-				    sock.close();
-				    System.out.println("rejected");
+				     sock.close();
+				     System.out.println("rejected");
 				}
 			
 			}
