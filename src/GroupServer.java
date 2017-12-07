@@ -199,15 +199,16 @@ public class GroupServer extends Server {
 				    gtip.put(thread,sock.getInetAddress().toString());
 				    thread.start();
 				    System.out.println("connected");
-				    // if(thread.getState()==Thread.State.TERMINATED)
-				    //	{
-				    // gtip.remove(thread);
-					    //	}
+				     if(thread.getState()==Thread.State.TERMINATED)
+				    	{
+				     gtip.remove(thread);
+					    	}
 				}
 				else{
 				    sock.close();
 				    System.out.println("rejected");
 				}
+			
 			}
 		}
 		catch(Exception e)
