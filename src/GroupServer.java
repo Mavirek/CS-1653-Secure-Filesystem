@@ -30,7 +30,7 @@ public class GroupServer extends Server {
 	private EncryptDecrypt ed = new EncryptDecrypt();
 	//gk<String groupName, ArrayList<SecretKey> gkList>
 	public GroupKeys gk;
-	
+    protected Hashtable<GroupThread, String> gtip;
 	public static Hashtable<String, SessionID> acceptedSessionIDs;
 	public static Hashtable<String, SessionID> unacceptedSessionIDs; 
 	public GroupServer() {
@@ -43,7 +43,7 @@ public class GroupServer extends Server {
 	@SuppressWarnings("unchecked")
 	public void start() {
 		// Overwrote server.start() because if no user file exists, initial admin account needs to be created
-
+	    
 		Security.addProvider(new BouncyCastleProvider());
 		String userFile = "UserList.bin";
 		String groupFile = "GroupList.bin";
@@ -53,7 +53,7 @@ public class GroupServer extends Server {
 		ObjectInputStream userStream;
 		ObjectInputStream groupStream;
 		ObjectInputStream gkStream;
-    
+		gtip = new Hashtable<GroupThread, String>();
 		String username = "";
 		String password = "";
 		byte[] hashPass;
@@ -193,8 +193,23 @@ public class GroupServer extends Server {
 			while(true)
 			{
 				sock = serverSock.accept();
-				thread = new GroupThread(sock, this);
-				thread.start();
+				//thread = new GroupThread(sock, this);
+				if(!gtip.contains(sock.getInetAddress().toString()))
+			        {
+				    thread = new GroupThread(sock, this);
+				    gtip.put(thread,sock.getInetAddress().toString());
+				    thread.start();
+				    System.out.println("connected");
+				    //if(thread.getState()==Thread.State.TERMINATED)
+				    // {
+				    //	gtip.remove(thread);
+				    //}
+				}
+				else{
+				     sock.close();
+				     System.out.println("rejected");
+				}
+			
 			}
 		}
 		catch(Exception e)
