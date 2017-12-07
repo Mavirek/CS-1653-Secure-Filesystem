@@ -29,7 +29,7 @@ To reset the Group Server, delete the files `UserList.bin`, `GroupKeysList.bin`,
 
 To reset the File Server, delete the `FileList.bin` & `SessionIDFS.bin` files and the `shared_files/` directory.
 
-## Setup the Attack 
+## Setup the Attack Without Solution
 In GroupServer.java comment out all code in the while(true) except for sock = serverSock.accept(); thread = new GroupThread(sock, this); thread.start();
 In GroupThread.java comment out my_gs.gtip.remove(this); in the two ifs it appears in on lines 409 and 416. 
 
@@ -38,4 +38,7 @@ Compile as normal.
 
 ## Run the Attack
 	java Attack <group server name> <group server port>
+	
+## Implement Solution 
+Uncomment the code from the "Setup the Attack Without Solution" section, recompile and run the Attack. 
 
