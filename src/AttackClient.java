@@ -125,7 +125,11 @@ public class AttackClient extends Client {
 
   public void attack() {
     try {
-      Envelope att = new Envelope("attack");
+      Envelope att = new Envelope("GET");
+      att.addObject("jak244");
+      att.addObject("localhost");
+      att.addObject(4321);
+      att.addObject(client);
       output.writeObject(encryptEnv(att));
     }
     catch(Exception e) {
